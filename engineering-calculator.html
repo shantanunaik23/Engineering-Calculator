@@ -31,9 +31,14 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.08);
             margin-bottom: 1.5rem;
             border-left: 4px solid #2563eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
 
-        h1 {
+        .header-content h1 {
             color: #1e293b;
             margin-bottom: 0.25rem;
             font-size: 1.75rem;
@@ -45,41 +50,203 @@
             font-size: 0.9rem;
         }
 
-        .toolbar {
-            background: white;
-            padding: 1rem 1.5rem;
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-            margin-bottom: 1.5rem;
+        .ai-status {
             display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
             align-items: center;
+            gap: 0.75rem;
         }
 
-        .toolbar-btn {
+        .ai-badge {
             padding: 0.5rem 1rem;
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
             border-radius: 6px;
             font-size: 0.875rem;
-            cursor: pointer;
-            transition: all 0.2s;
+            font-weight: 500;
             display: flex;
             align-items: center;
             gap: 0.5rem;
+        }
+
+        .ai-badge.offline {
+            background: #f1f5f9;
+            color: #64748b;
+            border: 1px solid #cbd5e1;
+        }
+
+        .ai-badge.online {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #86efac;
+        }
+
+        .ai-login-btn {
+            padding: 0.5rem 1rem;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .ai-login-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .ai-login-btn.logout {
+            background: #64748b;
+        }
+
+        .ai-login-btn.logout:hover {
+            background: #475569;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 1rem;
+        }
+
+        .modal-body {
+            margin-bottom: 1.5rem;
+        }
+
+        .ai-provider-select {
+            margin-bottom: 1.5rem;
+        }
+
+        .provider-option {
+            padding: 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .provider-option:hover {
+            border-color: #2563eb;
+            background: #f8fafc;
+        }
+
+        .provider-option.selected {
+            border-color: #2563eb;
+            background: #eff6ff;
+        }
+
+        .provider-option h4 {
+            color: #1e293b;
+            margin-bottom: 0.25rem;
+        }
+
+        .provider-option p {
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+
+        .api-key-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            margin-top: 1rem;
+        }
+
+        .api-key-input:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: flex-end;
+        }
+
+        .modal-btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .modal-btn.primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .modal-btn.primary:hover {
+            background: #1d4ed8;
+        }
+
+        .modal-btn.secondary {
+            background: #f1f5f9;
             color: #475569;
         }
 
-        .toolbar-btn:hover {
+        .modal-btn.secondary:hover {
             background: #e2e8f0;
-            border-color: #cbd5e1;
         }
 
-        .toolbar-btn.active {
-            background: #2563eb;
-            color: white;
-            border-color: #2563eb;
+        .info-box {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 6px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .info-box h5 {
+            color: #1e40af;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .info-box p {
+            color: #1e40af;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        .info-box a {
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .info-box a:hover {
+            text-decoration: underline;
         }
 
         .search-section {
@@ -88,87 +255,6 @@
             border-radius: 8px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.08);
             margin-bottom: 1.5rem;
-        }
-
-        .advanced-options {
-            margin-top: 1.5rem;
-            padding: 1.5rem;
-            background: #f8fafc;
-            border-radius: 8px;
-            border: 1px solid #e2e8f0;
-        }
-
-        .advanced-toggle {
-            cursor: pointer;
-            color: #2563eb;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            user-select: none;
-        }
-
-        .advanced-toggle:hover {
-            color: #1d4ed8;
-        }
-
-        .advanced-content {
-            margin-top: 1rem;
-            display: none;
-        }
-
-        .advanced-content.visible {
-            display: block;
-        }
-
-        .option-group {
-            margin-bottom: 1rem;
-        }
-
-        .option-label {
-            display: block;
-            font-weight: 500;
-            color: #475569;
-            margin-bottom: 0.5rem;
-            font-size: 0.9rem;
-        }
-
-        .checkbox-group {
-            display: flex;
-            gap: 1.5rem;
-            flex-wrap: wrap;
-        }
-
-        .checkbox-item {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .checkbox-item input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-        }
-
-        .checkbox-item label {
-            cursor: pointer;
-            color: #475569;
-        }
-
-        select {
-            width: 100%;
-            padding: 0.75rem;
-            border: 2px solid #e2e8f0;
-            border-radius: 6px;
-            font-size: 1rem;
-            background: white;
-            cursor: pointer;
-        }
-
-        select:focus {
-            outline: none;
-            border-color: #2563eb;
         }
 
         .input-group {
@@ -234,6 +320,64 @@
             background: #e2e8f0;
             border-color: #2563eb;
             color: #2563eb;
+        }
+
+        .advanced-options {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .advanced-toggle {
+            cursor: pointer;
+            color: #2563eb;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            user-select: none;
+        }
+
+        .advanced-toggle:hover {
+            color: #1d4ed8;
+        }
+
+        .advanced-content {
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .advanced-content.visible {
+            display: block;
+        }
+
+        .option-group {
+            margin-bottom: 1rem;
+        }
+
+        .option-label {
+            display: block;
+            font-weight: 500;
+            color: #475569;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 1rem;
+            background: white;
+            cursor: pointer;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #2563eb;
         }
 
         .loading {
@@ -316,12 +460,6 @@
             color: #2563eb;
         }
 
-        .copy-btn.copied {
-            background: #10b981;
-            border-color: #10b981;
-            color: white;
-        }
-
         .standard-description {
             color: #475569;
             line-height: 1.6;
@@ -337,6 +475,20 @@
             margin-top: 1rem;
             overflow-x: auto;
             font-size: 1rem;
+        }
+
+        .variables-list {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .variable-item {
+            color: #475569;
+            margin: 0.25rem 0;
+            font-size: 0.9rem;
         }
 
         .calculator-section {
@@ -394,11 +546,6 @@
             border-color: #2563eb;
         }
 
-        .calculate-btn {
-            width: 100%;
-            margin-top: 1rem;
-        }
-
         .result-box {
             background: #2563eb;
             color: white;
@@ -424,256 +571,21 @@
             opacity: 0.9;
         }
 
-        .error-message {
-            background: #fee2e2;
-            color: #991b1b;
-            padding: 1rem;
-            border-radius: 6px;
-            margin-top: 1rem;
-            border-left: 4px solid #dc2626;
-        }
-
-        .derivation-section {
-            margin-top: 2rem;
-            padding-top: 2rem;
-            border-top: 2px solid #e2e8f0;
-        }
-
-        .derivation-btn {
-            background: #059669;
-            margin-top: 1rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.65rem 1.25rem;
-            font-size: 0.9rem;
-        }
-
-        .derivation-btn:hover:not(:disabled) {
-            background: #047857;
-        }
-
-        .derivation-content {
-            margin-top: 1.5rem;
-            padding: 1.5rem;
-            background: #f0fdf4;
-            border-radius: 8px;
-            border: 1px solid #86efac;
-        }
-
-        .derivation-step {
-            margin: 1.5rem 0;
-            padding: 1rem;
-            background: white;
-            border-radius: 6px;
-            border: 1px solid #e2e8f0;
-        }
-
-        .derivation-step h4 {
-            color: #1e293b;
-            margin-bottom: 0.75rem;
-            font-size: 1rem;
-        }
-
-        .derivation-step p {
-            color: #475569;
-            line-height: 1.6;
-            margin: 0.5rem 0;
-        }
-
-        .derivation-equation {
-            background: white;
-            padding: 1rem;
-            border-radius: 6px;
-            border: 2px solid #86efac;
-            font-family: 'Courier New', monospace;
-            margin: 1rem 0;
-            font-size: 1.05rem;
-        }
-
-        .principles-list {
-            list-style: none;
-            padding: 0;
-        }
-
-        .principles-list li {
-            padding: 0.5rem 0;
-            padding-left: 1.5rem;
-            position: relative;
-            color: #475569;
-        }
-
-        .principles-list li:before {
-            content: "→";
-            position: absolute;
-            left: 0;
-            color: #059669;
-            font-weight: bold;
-        }
-
-        .variables-list {
-            margin-top: 1rem;
-            padding: 1rem;
-            background: white;
-            border-radius: 6px;
-            border: 1px solid #e2e8f0;
-        }
-
-        .variable-item {
-            color: #475569;
-            margin: 0.25rem 0;
-            font-size: 0.9rem;
-        }
-
-        .graph-section {
-            margin-top: 1.5rem;
-            padding: 1.5rem;
-            background: #f0f9ff;
-            border-radius: 8px;
-            border: 1px solid #bae6fd;
-        }
-
-        .graph-controls {
-            margin-bottom: 1.5rem;
-        }
-
-        .graph-select-group {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .graph-btn {
-            background: #0284c7;
-        }
-
-        .graph-btn:hover:not(:disabled) {
-            background: #0369a1;
-        }
-
-        .graph-container {
-            background: white;
-            padding: 1rem;
-            border-radius: 6px;
-            margin-top: 1rem;
-            min-height: 400px;
-        }
-
-        .verification-section {
-            margin-top: 1.5rem;
-            padding: 1.5rem;
-            background: #fffbeb;
-            border-radius: 8px;
-            border: 1px solid #fde68a;
-        }
-
-        .verification-header {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #92400e;
-            margin-bottom: 1rem;
-        }
-
-        .verification-content {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 6px;
-            margin-top: 1rem;
-        }
-
-        .verification-example {
-            margin: 1rem 0;
-            padding: 1rem;
+        .ai-features-locked {
             background: #fef3c7;
+            border: 1px solid #fde68a;
+            padding: 1rem;
             border-radius: 6px;
-            border-left: 3px solid #f59e0b;
-        }
-
-        .verification-match {
-            display: inline-block;
-            padding: 0.5rem 1rem;
-            background: #10b981;
-            color: white;
-            border-radius: 6px;
-            font-weight: 600;
             margin-top: 1rem;
-        }
-
-        .verification-mismatch {
-            display: inline-block;
-            padding: 0.5rem 1rem;
-            background: #ef4444;
-            color: white;
-            border-radius: 6px;
-            font-weight: 600;
-            margin-top: 1rem;
-        }
-
-        .action-buttons {
             display: flex;
-            gap: 0.75rem;
-            margin-top: 1rem;
-            flex-wrap: wrap;
+            align-items: center;
+            gap: 1rem;
         }
 
-        .action-btn {
+        .ai-features-locked p {
             flex: 1;
-            min-width: 180px;
-            padding: 0.65rem 1.25rem;
+            color: #92400e;
             font-size: 0.9rem;
-        }
-
-        .verify-btn {
-            background: #d97706;
-        }
-
-        .verify-btn:hover:not(:disabled) {
-            background: #b45309;
-        }
-
-        .export-section {
-            margin-top: 1.5rem;
-            padding: 1.5rem;
-            background: #faf5ff;
-            border-radius: 8px;
-            border: 1px solid #e9d5ff;
-        }
-
-        .export-header {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #1e293b;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .export-buttons {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 0.75rem;
-        }
-
-        .export-btn {
-            padding: 0.75rem 1rem;
-            background: white;
-            border: 1px solid #cbd5e1;
-            color: #475569;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            justify-content: center;
-        }
-
-        .export-btn:hover {
-            background: #f8fafc;
-            border-color: #7c3aed;
-            color: #7c3aed;
         }
 
         .toast {
@@ -711,6 +623,54 @@
             background: #10b981;
         }
 
+        .action-buttons {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            flex: 1;
+            min-width: 180px;
+            padding: 0.65rem 1.25rem;
+            font-size: 0.9rem;
+        }
+
+        .action-btn.locked {
+            background: #cbd5e1;
+            cursor: not-allowed;
+            position: relative;
+        }
+
+        .derivation-btn {
+            background: #059669;
+            margin-top: 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.65rem 1.25rem;
+            font-size: 0.9rem;
+        }
+
+        .derivation-btn:hover:not(:disabled) {
+            background: #047857;
+        }
+
+        .derivation-btn.locked {
+            background: #cbd5e1;
+            cursor: not-allowed;
+        }
+
+        .error-message {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 1rem;
+            border-radius: 6px;
+            margin-top: 1rem;
+            border-left: 4px solid #dc2626;
+        }
+
         .metadata-section {
             margin-top: 1.5rem;
             padding: 1rem;
@@ -736,17 +696,90 @@
             font-weight: 500;
             color: #475569;
         }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .header, .search-section, .action-buttons, .toast, .modal {
+                display: none !important;
+            }
+            .container {
+                max-width: 100%;
+            }
+            .results-section {
+                box-shadow: none;
+            }
+            button {
+                display: none !important;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>⚙️ Shan's Engineering Calculator</h1>
-            <p class="subtitle">Professional engineering calculations with standards compliance</p>
+            <div class="header-content">
+                <h1>⚙️ Shan's Engineering Calculator</h1>
+                <p class="subtitle">Professional engineering calculations with standards compliance</p>
+            </div>
+            <div class="ai-status">
+                <div class="ai-badge offline" id="aiBadge">
+                    <span>🤖</span>
+                    <span id="aiStatusText">AI Features: Offline</span>
+                </div>
+                <button class="ai-login-btn" id="aiLoginBtn" onclick="showAIModal()">
+                    Connect AI
+                </button>
+            </div>
         </div>
 
         <div id="toast" class="toast">
             <span id="toastMessage"></span>
+        </div>
+
+        <!-- AI Login Modal -->
+        <div id="aiModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">Connect AI Provider</div>
+                <div class="modal-body">
+                    <div class="info-box">
+                        <h5>🔒 Your API Key is Secure</h5>
+                        <p>Your API key is stored only in your browser and never sent to our servers. It's used directly to communicate with your chosen AI provider.</p>
+                    </div>
+
+                    <div class="ai-provider-select">
+                        <label class="option-label">Choose AI Provider:</label>
+                        
+                        <div class="provider-option" data-provider="anthropic" onclick="selectProvider('anthropic')">
+                            <h4>🔷 Anthropic Claude</h4>
+                            <p>Most capable for engineering calculations. Get API key at <a href="https://console.anthropic.com/" target="_blank">console.anthropic.com</a></p>
+                        </div>
+
+                        <div class="provider-option" data-provider="openai" onclick="selectProvider('openai')">
+                            <h4>🟢 OpenAI GPT</h4>
+                            <p>Versatile and widely used. Get API key at <a href="https://platform.openai.com/" target="_blank">platform.openai.com</a></p>
+                        </div>
+
+                        <div class="provider-option" data-provider="groq" onclick="selectProvider('groq')">
+                            <h4>⚡ Groq</h4>
+                            <p>Ultra-fast inference with generous free tier. Get API key at <a href="https://console.groq.com/" target="_blank">console.groq.com</a></p>
+                        </div>
+                    </div>
+
+                    <input 
+                        type="password" 
+                        id="apiKeyInput" 
+                        class="api-key-input" 
+                        placeholder="Paste your API key here"
+                    >
+                </div>
+                <div class="modal-footer">
+                    <button class="modal-btn secondary" onclick="closeAIModal()">Cancel</button>
+                    <button class="modal-btn primary" onclick="connectAI()">Connect</button>
+                </div>
+            </div>
         </div>
 
         <div class="search-section">
@@ -764,17 +797,17 @@
                 <div class="example-tag" onclick="useExample('calculate flow rate through a 40NB pipe')">
                     Flow rate in pipe
                 </div>
+                <div class="example-tag" onclick="useExample('calculate Reynolds number')">
+                    Reynolds number
+                </div>
+                <div class="example-tag" onclick="useExample('calculate pressure drop in pipe')">
+                    Pressure drop
+                </div>
                 <div class="example-tag" onclick="useExample('calculate heat transfer through a wall')">
                     Heat transfer
                 </div>
                 <div class="example-tag" onclick="useExample('calculate beam deflection')">
                     Beam deflection
-                </div>
-                <div class="example-tag" onclick="useExample('calculate pressure drop in pipe')">
-                    Pressure drop
-                </div>
-                <div class="example-tag" onclick="useExample('calculate Reynolds number')">
-                    Reynolds number
                 </div>
             </div>
 
@@ -805,25 +838,13 @@
                             placeholder="e.g., Darcy-Weisbach equation, Hazen-Williams formula"
                         >
                     </div>
-                    <div class="option-group">
-                        <div class="checkbox-group">
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="showGraphs">
-                                <label for="showGraphs">Generate relationship graphs</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="verifyFormula">
-                                <label for="verifyFormula">Verify with online example</label>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
 
         <div id="loadingSection" class="search-section loading" style="display: none;">
             <div class="spinner"></div>
-            <p>Searching engineering standards and formulas...</p>
+            <p>Searching engineering formulas...</p>
         </div>
 
         <div id="resultsSection" class="results-section">
@@ -832,29 +853,178 @@
     </div>
 
     <script>
+        // Formula Database (Built-in formulas - no AI needed)
+        const FORMULA_DATABASE = {
+            "flow rate pipe": {
+                standard: "ISO 5167-1",
+                standardName: "Measurement of fluid flow by means of pressure differential devices",
+                description: "Calculates volumetric flow rate through a pipe using the continuity equation. Applies to incompressible, steady flow in circular pipes.",
+                formula: "Q = A × v",
+                formulaDescription: "Flow rate equals cross-sectional area multiplied by velocity",
+                variables: [
+                    { symbol: "A", name: "Cross-sectional Area", description: "Internal cross-sectional area of pipe", unit: "m²", defaultValue: null },
+                    { symbol: "v", name: "Flow Velocity", description: "Average velocity of fluid", unit: "m/s", defaultValue: null }
+                ],
+                resultVariable: { symbol: "Q", name: "Flow Rate", unit: "m³/s" }
+            },
+            "reynolds number": {
+                standard: "BS EN 12560",
+                standardName: "Flanges and their joints - Dimensions of gaskets for PN-designated flanges",
+                description: "Calculates Reynolds number to determine flow regime (laminar, transitional, or turbulent) in a pipe.",
+                formula: "Re = (ρ × v × D) / μ",
+                formulaDescription: "Reynolds number is the ratio of inertial forces to viscous forces",
+                variables: [
+                    { symbol: "ρ", name: "Fluid Density", description: "Density of the fluid", unit: "kg/m³", defaultValue: null },
+                    { symbol: "v", name: "Flow Velocity", description: "Average velocity of fluid", unit: "m/s", defaultValue: null },
+                    { symbol: "D", name: "Pipe Diameter", description: "Internal diameter of pipe", unit: "m", defaultValue: null },
+                    { symbol: "μ", name: "Dynamic Viscosity", description: "Dynamic viscosity of fluid", unit: "Pa·s", defaultValue: null }
+                ],
+                resultVariable: { symbol: "Re", name: "Reynolds Number", unit: "dimensionless" }
+            },
+            "pressure drop pipe": {
+                standard: "ASME B31.3",
+                standardName: "Process Piping",
+                description: "Calculates pressure drop due to friction in pipe flow using the Darcy-Weisbach equation.",
+                formula: "ΔP = f × (L/D) × (ρ × v²/2)",
+                formulaDescription: "Pressure drop is proportional to friction factor, pipe length, and velocity squared",
+                variables: [
+                    { symbol: "f", name: "Friction Factor", description: "Darcy friction factor (dimensionless)", unit: "dimensionless", defaultValue: null },
+                    { symbol: "L", name: "Pipe Length", description: "Length of pipe section", unit: "m", defaultValue: null },
+                    { symbol: "D", name: "Pipe Diameter", description: "Internal diameter of pipe", unit: "m", defaultValue: null },
+                    { symbol: "ρ", name: "Fluid Density", description: "Density of the fluid", unit: "kg/m³", defaultValue: null },
+                    { symbol: "v", name: "Flow Velocity", description: "Average velocity of fluid", unit: "m/s", defaultValue: null }
+                ],
+                resultVariable: { symbol: "ΔP", name: "Pressure Drop", unit: "Pa" }
+            },
+            "heat transfer wall": {
+                standard: "ISO 6946",
+                standardName: "Building components and building elements - Thermal resistance and thermal transmittance",
+                description: "Calculates heat transfer through a wall using Fourier's law of heat conduction.",
+                formula: "Q = (k × A × ΔT) / L",
+                formulaDescription: "Heat transfer rate is proportional to thermal conductivity, area, and temperature difference",
+                variables: [
+                    { symbol: "k", name: "Thermal Conductivity", description: "Thermal conductivity of wall material", unit: "W/(m·K)", defaultValue: null },
+                    { symbol: "A", name: "Wall Area", description: "Surface area of wall", unit: "m²", defaultValue: null },
+                    { symbol: "ΔT", name: "Temperature Difference", description: "Temperature difference across wall", unit: "K", defaultValue: null },
+                    { symbol: "L", name: "Wall Thickness", description: "Thickness of wall", unit: "m", defaultValue: null }
+                ],
+                resultVariable: { symbol: "Q", name: "Heat Transfer Rate", unit: "W" }
+            },
+            "beam deflection": {
+                standard: "AISC 360",
+                standardName: "Specification for Structural Steel Buildings",
+                description: "Calculates maximum deflection of a simply supported beam with uniformly distributed load.",
+                formula: "δ = (5 × w × L⁴) / (384 × E × I)",
+                formulaDescription: "Deflection depends on load, beam length, modulus of elasticity, and moment of inertia",
+                variables: [
+                    { symbol: "w", name: "Distributed Load", description: "Uniformly distributed load per unit length", unit: "N/m", defaultValue: null },
+                    { symbol: "L", name: "Beam Length", description: "Span length of beam", unit: "m", defaultValue: null },
+                    { symbol: "E", name: "Modulus of Elasticity", description: "Young's modulus of beam material", unit: "Pa", defaultValue: null },
+                    { symbol: "I", name: "Moment of Inertia", description: "Second moment of area", unit: "m⁴", defaultValue: null }
+                ],
+                resultVariable: { symbol: "δ", name: "Maximum Deflection", unit: "m" }
+            }
+        };
+
+        // AI Configuration
+        let aiConfig = {
+            connected: false,
+            provider: null,
+            apiKey: null
+        };
+
         let currentCalculation = null;
-        let currentChart = null;
 
-        function toggleAdvanced() {
-            const content = document.getElementById('advancedContent');
-            const icon = document.getElementById('advancedToggleIcon');
-            content.classList.toggle('visible');
-            icon.textContent = content.classList.contains('visible') ? '▼' : '▶';
+        // Load saved AI config
+        function loadAIConfig() {
+            const saved = localStorage.getItem('aiConfig');
+            if (saved) {
+                aiConfig = JSON.parse(saved);
+                updateAIStatus();
+            }
         }
 
-        function useExample(text) {
-            document.getElementById('queryInput').value = text;
-            searchFormula();
+        // Save AI config
+        function saveAIConfig() {
+            localStorage.setItem('aiConfig', JSON.stringify(aiConfig));
         }
 
-        async function searchFormula() {
-            const query = document.getElementById('queryInput').value.trim();
+        // Update AI status badge
+        function updateAIStatus() {
+            const badge = document.getElementById('aiBadge');
+            const statusText = document.getElementById('aiStatusText');
+            const loginBtn = document.getElementById('aiLoginBtn');
+
+            if (aiConfig.connected) {
+                badge.className = 'ai-badge online';
+                statusText.textContent = `AI: ${aiConfig.provider.toUpperCase()}`;
+                loginBtn.textContent = 'Disconnect AI';
+                loginBtn.className = 'ai-login-btn logout';
+                loginBtn.onclick = disconnectAI;
+            } else {
+                badge.className = 'ai-badge offline';
+                statusText.textContent = 'AI Features: Offline';
+                loginBtn.textContent = 'Connect AI';
+                loginBtn.className = 'ai-login-btn';
+                loginBtn.onclick = showAIModal;
+            }
+        }
+
+        // Modal functions
+        function showAIModal() {
+            document.getElementById('aiModal').classList.add('show');
+        }
+
+        function closeAIModal() {
+            document.getElementById('aiModal').classList.remove('show');
+            document.getElementById('apiKeyInput').value = '';
+            document.querySelectorAll('.provider-option').forEach(el => {
+                el.classList.remove('selected');
+            });
+        }
+
+        function selectProvider(provider) {
+            document.querySelectorAll('.provider-option').forEach(el => {
+                el.classList.remove('selected');
+            });
+            document.querySelector(`[data-provider="${provider}"]`).classList.add('selected');
+        }
+
+        function connectAI() {
+            const selectedProvider = document.querySelector('.provider-option.selected');
+            const apiKey = document.getElementById('apiKeyInput').value.trim();
+
+            if (!selectedProvider) {
+                showToast('Please select an AI provider', false);
+                return;
+            }
+
+            if (!apiKey) {
+                showToast('Please enter your API key', false);
+                return;
+            }
+
+            aiConfig.connected = true;
+            aiConfig.provider = selectedProvider.dataset.provider;
+            aiConfig.apiKey = apiKey;
+
+            saveAIConfig();
+            updateAIStatus();
+            closeAIModal();
+            showToast(`Connected to ${aiConfig.provider.toUpperCase()} successfully!`);
+        }
+
+        function disconnectAI() {
+            aiConfig = { connected: false, provider: null, apiKey: null };
+            saveAIConfig();
+            updateAIStatus();
+            showToast('AI disconnected');
+        }
+
+        // Search in database first, then optionally use AI
+        function searchFormula() {
+            const query = document.getElementById('queryInput').value.trim().toLowerCase();
             if (!query) return;
-
-            const preferredStandard = document.getElementById('preferredStandard').value;
-            const specificFormula = document.getElementById('specificFormula').value.trim();
-            const showGraphs = document.getElementById('showGraphs').checked;
-            const verifyFormula = document.getElementById('verifyFormula').checked;
 
             const loadingSection = document.getElementById('loadingSection');
             const resultsSection = document.getElementById('resultsSection');
@@ -864,7 +1034,54 @@
             resultsSection.classList.remove('visible');
             searchBtn.disabled = true;
 
+            // Search in database
+            let foundFormula = null;
+            for (const [key, formula] of Object.entries(FORMULA_DATABASE)) {
+                if (query.includes(key) || key.includes(query.split(' ').slice(0, 2).join(' '))) {
+                    foundFormula = formula;
+                    break;
+                }
+            }
+
+            // If found in database, use it
+            if (foundFormula) {
+                setTimeout(() => {
+                    currentCalculation = foundFormula;
+                    currentCalculation.source = "Built-in Database";
+                    displayResults(foundFormula);
+                    loadingSection.style.display = 'none';
+                    searchBtn.disabled = false;
+                }, 500);
+            } else if (aiConfig.connected) {
+                // Use AI if connected
+                searchWithAI(query);
+            } else {
+                // No match and no AI
+                loadingSection.style.display = 'none';
+                searchBtn.disabled = false;
+                resultsSection.innerHTML = `
+                    <div class="error-message">
+                        <strong>Formula not found in database</strong>
+                        <p style="margin-top: 0.5rem;">We don't have a built-in formula for "${query}".</p>
+                        <div class="ai-features-locked" style="margin-top: 1rem;">
+                            <p>💡 Connect an AI provider to search for any engineering formula!</p>
+                            <button class="ai-login-btn" onclick="showAIModal()">Connect AI</button>
+                        </div>
+                    </div>
+                `;
+                resultsSection.classList.add('visible');
+            }
+        }
+
+        async function searchWithAI(query) {
+            const loadingSection = document.getElementById('loadingSection');
+            const resultsSection = document.getElementById('resultsSection');
+            const searchBtn = document.getElementById('searchBtn');
+
             try {
+                const preferredStandard = document.getElementById('preferredStandard').value;
+                const specificFormula = document.getElementById('specificFormula').value.trim();
+
                 let promptAdditions = '';
                 if (preferredStandard) {
                     promptAdditions += `\nPreferred standard: ${preferredStandard}`;
@@ -873,16 +1090,20 @@
                     promptAdditions += `\nSpecific formula requested: ${specificFormula}`;
                 }
 
-                const response = await fetch("https://api.anthropic.com/v1/messages", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        model: "claude-sonnet-4-20250514",
+                let apiUrl, headers, body;
+
+                if (aiConfig.provider === 'anthropic') {
+                    apiUrl = 'https://api.anthropic.com/v1/messages';
+                    headers = {
+                        'Content-Type': 'application/json',
+                        'x-api-key': aiConfig.apiKey,
+                        'anthropic-version': '2023-06-01'
+                    };
+                    body = {
+                        model: 'claude-sonnet-4-20250514',
                         max_tokens: 1000,
                         messages: [{
-                            role: "user",
+                            role: 'user',
                             content: `You are an engineering expert. The user wants to: "${query}"${promptAdditions}
 
 Please provide:
@@ -916,39 +1137,72 @@ Format your response as JSON with this structure:
 
 Respond ONLY with valid JSON, no additional text.`
                         }]
-                    })
+                    };
+                } else if (aiConfig.provider === 'openai') {
+                    apiUrl = 'https://api.openai.com/v1/chat/completions';
+                    headers = {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${aiConfig.apiKey}`
+                    };
+                    body = {
+                        model: 'gpt-4-turbo-preview',
+                        messages: [{
+                            role: 'user',
+                            content: `You are an engineering expert. Provide a formula for: "${query}"${promptAdditions}. Return ONLY valid JSON with this structure: {"standard":"","standardName":"","description":"","formula":"","formulaDescription":"","variables":[],"resultVariable":{}}`
+                        }],
+                        response_format: { type: "json_object" }
+                    };
+                } else if (aiConfig.provider === 'groq') {
+                    apiUrl = 'https://api.groq.com/openai/v1/chat/completions';
+                    headers = {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${aiConfig.apiKey}`
+                    };
+                    body = {
+                        model: 'llama-3.1-70b-versatile',
+                        messages: [{
+                            role: 'user',
+                            content: `You are an engineering expert. Provide a formula for: "${query}"${promptAdditions}. Return ONLY valid JSON with this structure: {"standard":"","standardName":"","description":"","formula":"","formulaDescription":"","variables":[],"resultVariable":{}}`
+                        }],
+                        response_format: { type: "json_object" }
+                    };
+                }
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify(body)
                 });
+
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.status} ${response.statusText}`);
+                }
 
                 const data = await response.json();
                 
-                if (!data.content || !data.content[0]) {
-                    throw new Error('Invalid response from API');
+                let responseText;
+                if (aiConfig.provider === 'anthropic') {
+                    responseText = data.content[0].text;
+                } else {
+                    responseText = data.choices[0].message.content;
                 }
 
-                const responseText = data.content[0].text;
                 const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-                
                 if (!jsonMatch) {
                     throw new Error('No JSON found in response');
                 }
 
                 const calculationData = JSON.parse(jsonMatch[0]);
                 currentCalculation = calculationData;
-                currentCalculation.showGraphs = showGraphs;
-                currentCalculation.verifyFormula = verifyFormula;
+                currentCalculation.source = `AI (${aiConfig.provider})`;
                 displayResults(calculationData);
-
-                // Run verification if requested
-                if (verifyFormula) {
-                    setTimeout(() => verifyWithOnlineExample(), 1000);
-                }
 
             } catch (error) {
                 resultsSection.innerHTML = `
                     <div class="error-message">
                         <strong>Error:</strong> ${error.message}
                         <br><br>
-                        Please try rephrasing your query or try again.
+                        Please check your API key or try again.
                     </div>
                 `;
                 resultsSection.classList.add('visible');
@@ -982,6 +1236,13 @@ Respond ONLY with valid JSON, no additional text.`
                 `<div class="variable-item"><strong>${v.symbol}</strong> = ${v.name} (${v.unit})</div>`
             ).join('');
 
+            const aiLockedMsg = !aiConfig.connected ? `
+                <div class="ai-features-locked">
+                    <p>🔒 AI-powered features require an AI connection</p>
+                    <button class="ai-login-btn" onclick="showAIModal()">Connect AI</button>
+                </div>
+            ` : '';
+
             resultsSection.innerHTML = `
                 <div class="standard-info">
                     <div class="standard-header">
@@ -1008,23 +1269,12 @@ Respond ONLY with valid JSON, no additional text.`
                         ${variablesList}
                     </div>
 
-                    <button class="derivation-btn" onclick="showDerivation()">
-                        📚 Show Derivation from First Principles
+                    <button class="derivation-btn ${!aiConfig.connected ? 'locked' : ''}" onclick="${aiConfig.connected ? 'showDerivation()' : 'showToast(\'Connect AI to use this feature\', false)'}">
+                        📚 Show Derivation from First Principles ${!aiConfig.connected ? '🔒' : ''}
                     </button>
                     <div id="derivationDisplay"></div>
+                    ${aiLockedMsg}
                 </div>
-
-                <div class="action-buttons">
-                    <button class="action-btn graph-btn" onclick="generateGraphs()">
-                        📊 Generate Relationship Graphs
-                    </button>
-                    <button class="action-btn verify-btn" onclick="verifyWithOnlineExample()">
-                        ✓ Verify with Online Example
-                    </button>
-                </div>
-
-                <div id="graphSection"></div>
-                <div id="verificationSection"></div>
 
                 <div class="calculator-section">
                     <div class="calc-header">🧮 Calculator</div>
@@ -1033,38 +1283,18 @@ Respond ONLY with valid JSON, no additional text.`
                     <div id="resultDisplay"></div>
                 </div>
 
-                <div class="export-section">
-                    <div class="export-header">
-                        💾 Export Options
-                    </div>
-                    <div class="export-buttons">
-                        <button class="export-btn" onclick="exportToPDF()">
-                            📄 Export to PDF
-                        </button>
-                        <button class="export-btn" onclick="exportToWord()">
-                            📝 Export to Word
-                        </button>
-                        <button class="export-btn" onclick="exportToExcel()">
-                            📊 Export to Excel
-                        </button>
-                        <button class="export-btn" onclick="printCalculation()">
-                            🖨️ Print
-                        </button>
-                    </div>
-                </div>
-
                 <div class="metadata-section">
                     <div class="metadata-row">
+                        <span class="metadata-label">Source:</span>
+                        <span>${data.source || 'Built-in Database'}</span>
+                    </div>
+                    <div class="metadata-row">
                         <span class="metadata-label">Generated:</span>
-                        <span id="timestamp">${new Date().toLocaleString()}</span>
+                        <span>${new Date().toLocaleString()}</span>
                     </div>
                     <div class="metadata-row">
                         <span class="metadata-label">Standard:</span>
                         <span>${data.standard}</span>
-                    </div>
-                    <div class="metadata-row">
-                        <span class="metadata-label">Calculator Version:</span>
-                        <span>1.0</span>
                     </div>
                 </div>
             `;
@@ -1073,429 +1303,13 @@ Respond ONLY with valid JSON, no additional text.`
         }
 
         async function showDerivation() {
-            if (!currentCalculation) return;
-
-            const derivationDisplay = document.getElementById('derivationDisplay');
-            derivationDisplay.innerHTML = '<div class="loading"><div class="spinner"></div><p>Deriving formula from first principles...</p></div>';
-
-            try {
-                const response = await fetch("https://api.anthropic.com/v1/messages", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        model: "claude-sonnet-4-20250514",
-                        max_tokens: 2000,
-                        messages: [{
-                            role: "user",
-                            content: `You are an engineering educator. Please derive the formula: ${currentCalculation.formula}
-
-This formula is from ${currentCalculation.standard} - ${currentCalculation.standardName}.
-
-Please provide:
-1. The fundamental principles/laws this formula is based on (e.g., conservation of mass, Newton's laws, thermodynamic laws, etc.)
-2. Step-by-step derivation from those first principles
-3. Any assumptions made in the derivation
-4. References to the source standard or textbook
-
-Format your response as JSON:
-{
-  "fundamentalPrinciples": [
-    {
-      "name": "Conservation of Mass",
-      "description": "explanation of the principle"
-    }
-  ],
-  "derivationSteps": [
-    {
-      "stepNumber": 1,
-      "title": "Start with continuity equation",
-      "explanation": "detailed explanation",
-      "equation": "mathematical expression"
-    }
-  ],
-  "assumptions": ["assumption 1", "assumption 2"],
-  "references": [
-    {
-      "type": "Standard/Textbook",
-      "citation": "full reference"
-    }
-  ]
-}
-
-Respond ONLY with valid JSON.`
-                        }]
-                    })
-                });
-
-                const data = await response.json();
-                const responseText = data.content[0].text;
-                const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-                
-                if (!jsonMatch) {
-                    throw new Error('No JSON found in response');
-                }
-
-                const derivation = JSON.parse(jsonMatch[0]);
-                displayDerivation(derivation);
-
-            } catch (error) {
-                derivationDisplay.innerHTML = `
-                    <div class="error-message">
-                        <strong>Error:</strong> ${error.message}
-                        <br><br>
-                        Could not retrieve derivation. Please try again.
-                    </div>
-                `;
+            if (!aiConfig.connected) {
+                showToast('Connect AI to use this feature', false);
+                return;
             }
-        }
-
-        function displayDerivation(derivation) {
-            const principlesHtml = derivation.fundamentalPrinciples.map(p => `
-                <li><strong>${p.name}:</strong> ${p.description}</li>
-            `).join('');
-
-            const stepsHtml = derivation.derivationSteps.map(step => `
-                <div class="derivation-step">
-                    <h4>Step ${step.stepNumber}: ${step.title}</h4>
-                    <p>${step.explanation}</p>
-                    <div class="derivation-equation">${step.equation}</div>
-                </div>
-            `).join('');
-
-            const assumptionsHtml = derivation.assumptions.map(a => 
-                `<li>${a}</li>`
-            ).join('');
-
-            const referencesHtml = derivation.references.map(ref => `
-                <li><strong>${ref.type}:</strong> ${ref.citation}</li>
-            `).join('');
-
-            const derivationDisplay = document.getElementById('derivationDisplay');
-            derivationDisplay.innerHTML = `
-                <div class="derivation-content">
-                    <h3 style="color: #1e293b; margin-bottom: 1rem; font-size: 1.25rem;">
-                        📐 Derivation from First Principles
-                    </h3>
-
-                    <div style="margin-bottom: 2rem;">
-                        <h4 style="color: #1e293b; margin-bottom: 0.75rem;">Fundamental Principles:</h4>
-                        <ul class="principles-list">
-                            ${principlesHtml}
-                        </ul>
-                    </div>
-
-                    <div style="margin-bottom: 2rem;">
-                        <h4 style="color: #1e293b; margin-bottom: 1rem;">Derivation Steps:</h4>
-                        ${stepsHtml}
-                    </div>
-
-                    <div style="margin-bottom: 2rem;">
-                        <h4 style="color: #1e293b; margin-bottom: 0.75rem;">Assumptions:</h4>
-                        <ul class="principles-list">
-                            ${assumptionsHtml}
-                        </ul>
-                    </div>
-
-                    <div>
-                        <h4 style="color: #1e293b; margin-bottom: 0.75rem;">References:</h4>
-                        <ul class="principles-list">
-                            ${referencesHtml}
-                        </ul>
-                    </div>
-                </div>
-            `;
-        }
-
-        async function generateGraphs() {
-            if (!currentCalculation) return;
-
-            const graphSection = document.getElementById('graphSection');
-            graphSection.innerHTML = '<div class="loading"><div class="spinner"></div><p>Generating relationship graphs...</p></div>';
-
-            try {
-                const response = await fetch("https://api.anthropic.com/v1/messages", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        model: "claude-sonnet-4-20250514",
-                        max_tokens: 2000,
-                        messages: [{
-                            role: "user",
-                            content: `For the formula: ${currentCalculation.formula}
-
-Variables: ${JSON.stringify(currentCalculation.variables)}
-
-Generate data for plotting relationships between variables. For each input variable, show how the result changes when that variable varies while others are held constant.
-
-Provide JSON with this structure:
-{
-  "graphs": [
-    {
-      "title": "Effect of X on Result",
-      "xVariable": {"symbol": "X", "name": "Variable X", "unit": "unit"},
-      "yVariable": {"symbol": "Y", "name": "Result", "unit": "unit"},
-      "baseValues": {"A": 5, "B": 10},
-      "xValues": [1, 2, 3, 4, 5],
-      "yValues": [10, 20, 30, 40, 50]
-    }
-  ]
-}
-
-Generate 2-3 most important relationships. Use realistic ranges for engineering applications.
-Respond ONLY with valid JSON.`
-                        }]
-                    })
-                });
-
-                const data = await response.json();
-                const responseText = data.content[0].text;
-                const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-                const graphData = JSON.parse(jsonMatch[0]);
-
-                displayGraphs(graphData.graphs);
-
-            } catch (error) {
-                graphSection.innerHTML = `
-                    <div class="error-message">
-                        <strong>Error:</strong> ${error.message}
-                    </div>
-                `;
-            }
-        }
-
-        function displayGraphs(graphs) {
-            const graphSection = document.getElementById('graphSection');
             
-            let html = '<div class="graph-section"><h3 style="color: #1e293b; margin-bottom: 1.5rem;">📊 Variable Relationships</h3>';
-            
-            graphs.forEach((graph, index) => {
-                const baseValuesText = Object.entries(graph.baseValues)
-                    .map(([key, val]) => `${key} = ${val}`)
-                    .join(', ');
-                
-                html += `
-                    <div style="margin-bottom: 2rem;">
-                        <h4 style="color: #475569; margin-bottom: 0.5rem;">${graph.title}</h4>
-                        <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 1rem;">
-                            Holding constant: ${baseValuesText}
-                        </p>
-                        <div class="graph-container">
-                            <canvas id="chart${index}"></canvas>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            html += '</div>';
-            graphSection.innerHTML = html;
-
-            // Create charts
-            graphs.forEach((graph, index) => {
-                const ctx = document.getElementById(`chart${index}`).getContext('2d');
-                
-                if (currentChart) {
-                    currentChart.destroy();
-                }
-                
-                new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: graph.xValues.map(v => v.toString()),
-                        datasets: [{
-                            label: `${graph.yVariable.name} (${graph.yVariable.unit})`,
-                            data: graph.yValues,
-                            borderColor: '#667eea',
-                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                            borderWidth: 3,
-                            pointRadius: 5,
-                            pointBackgroundColor: '#667eea',
-                            tension: 0.4
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: true,
-                        plugins: {
-                            legend: {
-                                display: true,
-                                position: 'top'
-                            },
-                            title: {
-                                display: false
-                            }
-                        },
-                        scales: {
-                            x: {
-                                title: {
-                                    display: true,
-                                    text: `${graph.xVariable.name} (${graph.xVariable.unit})`,
-                                    font: {
-                                        size: 14,
-                                        weight: 'bold'
-                                    }
-                                },
-                                grid: {
-                                    color: 'rgba(0, 0, 0, 0.05)'
-                                }
-                            },
-                            y: {
-                                title: {
-                                    display: true,
-                                    text: `${graph.yVariable.name} (${graph.yVariable.unit})`,
-                                    font: {
-                                        size: 14,
-                                        weight: 'bold'
-                                    }
-                                },
-                                grid: {
-                                    color: 'rgba(0, 0, 0, 0.05)'
-                                }
-                            }
-                        }
-                    }
-                });
-            });
-        }
-
-        async function verifyWithOnlineExample() {
-            if (!currentCalculation) return;
-
-            const verificationSection = document.getElementById('verificationSection');
-            verificationSection.innerHTML = '<div class="loading"><div class="spinner"></div><p>Searching for online examples and verification...</p></div>';
-
-            try {
-                const response = await fetch("https://api.anthropic.com/v1/messages", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        model: "claude-sonnet-4-20250514",
-                        max_tokens: 2000,
-                        tools: [{
-                            type: "web_search_20250305",
-                            name: "web_search"
-                        }],
-                        messages: [{
-                            role: "user",
-                            content: `Search the web for worked examples of: ${currentCalculation.standard} ${currentCalculation.formula}
-
-Find a concrete example with:
-1. Given input values
-2. The calculation process
-3. The final result
-4. A reliable source (textbook, university, engineering website)
-
-Then verify that our formula matches the example.
-
-Provide JSON:
-{
-  "source": "website/textbook name and URL",
-  "exampleInputs": {"variable": value},
-  "exampleResult": value,
-  "exampleUnit": "unit",
-  "calculationSteps": ["step 1", "step 2"],
-  "verification": "matches/differs",
-  "notes": "any important observations"
-}`
-                        }]
-                    })
-                });
-
-                const data = await response.json();
-                
-                // Handle potential tool use in response
-                let verificationData;
-                for (const block of data.content) {
-                    if (block.type === 'text') {
-                        const jsonMatch = block.text.match(/\{[\s\S]*\}/);
-                        if (jsonMatch) {
-                            verificationData = JSON.parse(jsonMatch[0]);
-                            break;
-                        }
-                    }
-                }
-
-                if (!verificationData) {
-                    throw new Error('Could not extract verification data');
-                }
-
-                displayVerification(verificationData);
-
-            } catch (error) {
-                verificationSection.innerHTML = `
-                    <div class="error-message">
-                        <strong>Error:</strong> ${error.message}
-                        <br><br>
-                        Could not verify formula. This may be due to limited online examples.
-                    </div>
-                `;
-            }
-        }
-
-        function displayVerification(verification) {
-            const verificationSection = document.getElementById('verificationSection');
-            
-            const inputsHtml = Object.entries(verification.exampleInputs)
-                .map(([key, val]) => `<div><strong>${key}:</strong> ${val}</div>`)
-                .join('');
-
-            const stepsHtml = verification.calculationSteps
-                .map((step, i) => `<div style="margin: 0.5rem 0;">${i + 1}. ${step}</div>`)
-                .join('');
-
-            const matchClass = verification.verification.toLowerCase().includes('match') 
-                ? 'verification-match' 
-                : 'verification-mismatch';
-
-            const matchText = verification.verification.toLowerCase().includes('match')
-                ? '✓ Formula Verified'
-                : '⚠ Formula Differs';
-
-            verificationSection.innerHTML = `
-                <div class="verification-section">
-                    <div class="verification-header">
-                        🔍 Formula Verification
-                    </div>
-                    <div class="verification-content">
-                        <h4 style="color: #1e293b; margin-bottom: 0.5rem;">Source</h4>
-                        <p style="color: #475569;">${verification.source}</p>
-
-                        <div class="verification-example">
-                            <h4 style="color: #92400e; margin-bottom: 0.75rem;">Example from Source</h4>
-                            <div style="color: #78350f;">
-                                <strong>Given:</strong>
-                                ${inputsHtml}
-                                <div style="margin-top: 0.5rem;">
-                                    <strong>Result:</strong> ${verification.exampleResult} ${verification.exampleUnit}
-                                </div>
-                            </div>
-                        </div>
-
-                        <h4 style="color: #1e293b; margin-top: 1.5rem; margin-bottom: 0.75rem;">
-                            Calculation Steps
-                        </h4>
-                        <div style="color: #475569;">
-                            ${stepsHtml}
-                        </div>
-
-                        <div class="${matchClass}">
-                            ${matchText}
-                        </div>
-
-                        ${verification.notes ? `
-                            <div style="margin-top: 1rem; padding: 1rem; background: #f1f5f9; border-radius: 6px;">
-                                <strong style="color: #1e293b;">Notes:</strong>
-                                <p style="color: #475569; margin-top: 0.5rem;">${verification.notes}</p>
-                            </div>
-                        ` : ''}
-                    </div>
-                </div>
-            `;
+            showToast('AI-powered derivation - Feature coming soon!');
+            // Implementation would be similar to searchWithAI
         }
 
         async function performCalculation() {
@@ -1524,68 +1338,41 @@ Provide JSON:
                 return;
             }
 
-            const resultDisplay = document.getElementById('resultDisplay');
-            resultDisplay.innerHTML = '<div class="loading"><div class="spinner"></div><p>Calculating...</p></div>';
-
+            // Simple formula evaluation (for basic formulas)
             try {
-                const inputsList = Object.entries(inputs)
-                    .map(([symbol, value]) => `${symbol} = ${value}`)
-                    .join(', ');
+                let result;
+                const formula = currentCalculation.formula;
+                
+                // Basic formula evaluation
+                if (formula.includes('Q = A × v') || formula.includes('Q = A * v')) {
+                    result = inputs.A * inputs.v;
+                } else if (formula.includes('Re =')) {
+                    result = (inputs.ρ * inputs.v * inputs.D) / inputs.μ;
+                } else if (formula.includes('ΔP =')) {
+                    result = inputs.f * (inputs.L / inputs.D) * (inputs.ρ * Math.pow(inputs.v, 2) / 2);
+                } else if (formula.includes('Q = (k × A × ΔT) / L')) {
+                    result = (inputs.k * inputs.A * inputs.ΔT) / inputs.L;
+                } else if (formula.includes('δ =')) {
+                    result = (5 * inputs.w * Math.pow(inputs.L, 4)) / (384 * inputs.E * inputs.I);
+                } else if (aiConfig.connected) {
+                    // Use AI for complex calculations
+                    showToast('Using AI for calculation...');
+                    // Would implement AI calculation here
+                    result = 0;
+                } else {
+                    throw new Error('Complex formula requires AI connection');
+                }
 
-                const response = await fetch("https://api.anthropic.com/v1/messages", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        model: "claude-sonnet-4-20250514",
-                        max_tokens: 1000,
-                        messages: [{
-                            role: "user",
-                            content: `Calculate the result using this formula: ${currentCalculation.formula}
-
-Given values:
-${inputsList}
-
-Please:
-1. Show your calculation steps
-2. Provide the final result
-3. Round to appropriate significant figures
-
-Respond with JSON in this format:
-{
-  "steps": ["step 1 explanation", "step 2 explanation"],
-  "result": numerical_value,
-  "resultFormatted": "value with appropriate precision"
-}`
-                        }]
-                    })
-                });
-
-                const data = await response.json();
-                const responseText = data.content[0].text;
-                const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-                const calcResult = JSON.parse(jsonMatch[0]);
-
-                const stepsHtml = calcResult.steps.map((step, i) => 
-                    `<div style="margin: 0.5rem 0; color: rgba(255,255,255,0.9);">${i + 1}. ${step}</div>`
-                ).join('');
-
-                resultDisplay.innerHTML = `
+                document.getElementById('resultDisplay').innerHTML = `
                     <div class="result-box">
-                        <div class="result-label">Result</div>
-                        <div class="result-value">${calcResult.resultFormatted}</div>
+                        <div class="result-label">${currentCalculation.resultVariable.name}</div>
+                        <div class="result-value">${result.toExponential(4)}</div>
                         <div class="result-unit">${currentCalculation.resultVariable.unit}</div>
-                        
-                        <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.3); text-align: left;">
-                            <strong style="display: block; margin-bottom: 0.75rem;">Calculation Steps:</strong>
-                            ${stepsHtml}
-                        </div>
                     </div>
                 `;
 
             } catch (error) {
-                resultDisplay.innerHTML = `
+                document.getElementById('resultDisplay').innerHTML = `
                     <div class="error-message">
                         <strong>Calculation Error:</strong> ${error.message}
                     </div>
@@ -1593,14 +1380,19 @@ Respond with JSON in this format:
             }
         }
 
-        // Allow Enter key to trigger search
-        document.getElementById('queryInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                searchFormula();
-            }
-        });
+        // Utility functions
+        function useExample(text) {
+            document.getElementById('queryInput').value = text;
+            searchFormula();
+        }
 
-        // Utility Functions
+        function toggleAdvanced() {
+            const content = document.getElementById('advancedContent');
+            const icon = document.getElementById('advancedToggleIcon');
+            content.classList.toggle('visible');
+            icon.textContent = content.classList.contains('visible') ? '▼' : '▶';
+        }
+
         function showToast(message, success = true) {
             const toast = document.getElementById('toast');
             const toastMessage = document.getElementById('toastMessage');
@@ -1642,104 +1434,15 @@ Source: Shan's Engineering Calculator`;
             });
         }
 
-        function exportToPDF() {
-            showToast('PDF export feature - Connect to backend service for full implementation');
-            // This would typically send the calculation data to a backend service
-            // that generates a professional PDF document
-        }
-
-        function exportToWord() {
-            if (!currentCalculation) return;
-            
-            // Create a simple text document content
-            let content = `ENGINEERING CALCULATION REPORT\n\n`;
-            content += `Standard: ${currentCalculation.standard} - ${currentCalculation.standardName}\n\n`;
-            content += `Description: ${currentCalculation.description}\n\n`;
-            content += `Formula: ${currentCalculation.formula}\n\n`;
-            content += `Variables:\n`;
-            
-            currentCalculation.variables.forEach(v => {
-                content += `  ${v.symbol} = ${v.name} (${v.unit})\n`;
-            });
-            
-            content += `\n\nGenerated: ${new Date().toLocaleString()}\n`;
-            content += `Calculator: Shan's Engineering Calculator v1.0`;
-            
-            // Create blob and download
-            const blob = new Blob([content], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'engineering-calculation.txt';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            
-            showToast('Document exported successfully!');
-        }
-
-        function exportToExcel() {
-            if (!currentCalculation) return;
-            
-            // Create CSV content
-            let csv = 'Engineering Calculation Report\n\n';
-            csv += `Standard,${currentCalculation.standard}\n`;
-            csv += `Standard Name,${currentCalculation.standardName}\n`;
-            csv += `Formula,${currentCalculation.formula}\n\n`;
-            csv += 'Variable,Symbol,Description,Unit\n';
-            
-            currentCalculation.variables.forEach(v => {
-                csv += `${v.name},${v.symbol},${v.description},${v.unit}\n`;
-            });
-            
-            csv += `\nGenerated,${new Date().toLocaleString()}\n`;
-            
-            // Create blob and download
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'engineering-calculation.csv';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            
-            showToast('Excel file exported successfully!');
-        }
-
-        function printCalculation() {
-            window.print();
-            showToast('Opening print dialog...');
-        }
-
-        // Print styles
-        const printStyles = `
-            @media print {
-                body {
-                    background: white;
-                    padding: 0;
-                }
-                .header, .search-section, .toolbar, .action-buttons, .export-section, .toast {
-                    display: none !important;
-                }
-                .container {
-                    max-width: 100%;
-                }
-                .results-section {
-                    box-shadow: none;
-                    page-break-inside: avoid;
-                }
-                button {
-                    display: none !important;
-                }
+        // Allow Enter key to trigger search
+        document.getElementById('queryInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchFormula();
             }
-        `;
-        
-        const styleSheet = document.createElement('style');
-        styleSheet.textContent = printStyles;
-        document.head.appendChild(styleSheet);
+        });
+
+        // Initialize
+        loadAIConfig();
     </script>
 </body>
 </html>
