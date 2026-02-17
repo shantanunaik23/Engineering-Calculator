@@ -2763,45 +2763,206 @@ async function showDerivation() {
     box.innerHTML='<div class="loading"><div class="spinner"></div><p>Deriving from first principles…</p></div>';
     try {
         const d=parseJSON(await callAI(
-`Derive: ${currentCalc.formula} (${currentCalc.standard}).
-Return JSON only: {"fundamentalPrinciples":[{"name":"","description":""}],"derivationSteps":[{"stepNumber":1,"title":"","explanation":"","equation":""}],"assumptions":[""],"references":[{"type":"","citation":""}]}`
+`Derive the fundamental equation: ${currentCalc.formula} (${currentCalc.standard}).
+
+Provide a complete derivation from first principles showing every significant step.
+Return ONLY JSON (no other text):
+{"fundamentalPrinciples":[{"name":"...","description":"..."}],"derivationSteps":[{"stepNumber":1,"title":"...","explanation":"...","equation":"..."}],"assumptions":["..."],"references":[{"type":"...","citation":"..."}]}`
         ));
+        
+        // Validate structure
+        if (!d) throw new Error('Invalid response structure');
+        const principles = Array.isArray(d.fundamentalPrinciples) ? d.fundamentalPrinciples : [];
+        const steps = Array.isArray(d.derivationSteps) ? d.derivationSteps : [];
+        const assumptions = Array.isArray(d.assumptions) ? d.assumptions : [];
+        const references = Array.isArray(d.references) ? d.references : [];
+        
+        if (steps.length === 0) throw new Error('No derivation steps returned');
+        
         box.innerHTML=`<div class="derivation-content">
             <h3 style="color:#1e293b;margin-bottom:1rem;font-weight:700">📐 Derivation from First Principles</h3>
-            <h4 style="color:#1e293b;margin-bottom:0.5rem">Fundamental Principles</h4>
-            <ul class="step-list">${d.fundamentalPrinciples.map(p=>`<li><strong>${p.name}:</strong> ${p.description}</li>`).join('')}</ul>
-            <h4 style="color:#1e293b;margin:1rem 0 0.5rem">Steps</h4>
-            ${d.derivationSteps.map(s=>`<div class="derivation-step"><h4>Step ${s.stepNumber}: ${s.title}</h4><p>${s.explanation}</p><div class="derivation-eq">${s.equation}</div></div>`).join('')}
-            <h4 style="color:#1e293b;margin:1rem 0 0.5rem">Assumptions</h4>
-            <ul class="step-list">${d.assumptions.map(a=>`<li>${a}</li>`).join('')}</ul>
-            <h4 style="color:#1e293b;margin:1rem 0 0.5rem">References</h4>
-            <ul class="step-list">${d.references.map(r=>`<li><strong>${r.type}:</strong> ${r.citation}</li>`).join('')}</ul>
+            ${principles.length > 0 ? `<h4 style="color:#1e293b;margin-bottom:0.5rem">Fundamental Principles</h4>
+            <ul class="step-list">${principles.map(p=>`<li><strong>${p.name || 'Principle'}:</strong> ${p.description || ''}</li>`).join('')}</ul>` : ''}
+            <h4 style="color:#1e293b;margin:1rem 0 0.5rem">Derivation Steps</h4>
+            ${steps.map(s=>`<div class="derivation-step"><h4>Step ${s.stepNumber || ''}: ${s.title || ''}</h4><p>${s.explanation || ''}</p><div class="derivation-eq">$$${s.equation || ''}$$</div></div>`).join('')}
+            ${assumptions.length > 0 ? `<h4 style="color:#1e293b;margin:1rem 0 0.5rem">Assumptions</h4>
+            <ul class="step-list">${assumptions.map(a=>`<li>${a}</li>`).join('')}</ul>` : ''}
+            ${references.length > 0 ? `<h4 style="color:#1e293b;margin:1rem 0 0.5rem">References</h4>
+            <ul class="step-list">${references.map(r=>`<li><strong>${r.type || ''}:</strong> ${r.citation || ''}</li>`).join('')}</ul>` : ''}
         </div>`;
-    } catch(e){ box.innerHTML=`<div class="error-msg">Derivation error: ${e.message}</div>`; }
+        
+        // Render KaTeX formulas in the derivation equations
+        if (typeof renderMathInElement !== 'undefined') {
+            setTimeout(() => {
+                renderMathInElement(box, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});
+            }, 0);
+        }
+    } catch(e){ 
+        logger.error('Derivation generation failed', { error: e.message });
+        box.innerHTML=`<div class="error-msg">⚠️ Derivation error: ${e.message}</div>`; 
+    }
 }
 
 async function generateGraphs() {
     const box=document.getElementById('graphBox');
     box.innerHTML='<div class="loading"><div class="spinner"></div><p>Generating graphs…</p></div>';
     try {
-        const {graphs}=parseJSON(await callAI(
-`Formula: ${currentCalc.formula}, variables: ${JSON.stringify(currentCalc.variables)}.
-Show how result changes as each key variable varies, holding others constant at realistic engineering values.
-Return JSON only: {"graphs":[{"title":"","xVariable":{"symbol":"","name":"","unit":""},"yVariable":{"symbol":"","name":"","unit":""},"baseValues":{},"xValues":[],"yValues":[]}]}`
-        ));
-        let html='<div class="graph-section"><h3>📊 Variable Relationships</h3>';
+        // For each variable, generate a graph showing how result varies with that variable
+        const graphs = [];
+        
+        // Use up to 3 key variables
+        const keyVars = currentCalc.variables.slice(0, 3);
+        
+        for (const keyVar of keyVars) {
+            const prompt = `Formula: ${currentCalc.formula}
+Result variable: ${currentCalc.resultVariable?.symbol || 'result'} (${currentCalc.resultVariable?.unit || ''})
+Key variable to vary: ${keyVar.symbol} (${keyVar.name}, in ${keyVar.unit})
+Other variables: ${currentCalc.variables.filter(v => v.symbol !== keyVar.symbol).map(v => `${v.symbol}=${v.defaultValue || 1} ${v.unit}`).join('; ')}
+
+Generate 10 numerical data points showing how the result changes as ${keyVar.symbol} increases through a realistic range.
+Return ONLY this JSON (no other text):
+{"x":[1,2,3],"y":[10,20,30],"title":"Result vs ${keyVar.symbol}","xMin":0,"xMax":100}`;
+
+            const data = parseJSON(await callAI(prompt));
+            
+            graphs.push({
+                title: data.title || `Result vs ${keyVar.symbol}`,
+                xVariable: { symbol: keyVar.symbol, name: keyVar.name, unit: keyVar.unit },
+                yVariable: { symbol: currentCalc.resultVariable?.symbol || 'Result', name: currentCalc.resultVariable?.name || 'Result', unit: currentCalc.resultVariable?.unit || '' },
+                baseValues: Object.fromEntries(currentCalc.variables.filter(v => v.symbol !== keyVar.symbol).map(v => [v.symbol, v.defaultValue || 1])),
+                xValues: data.x || [],
+                yValues: data.y || []
+            });
+            
+            logger.info('Generated graph', { variable: keyVar.symbol, points: data.x?.length || 0 });
+        }
+        
+        
+        let html='<div class="graph-section"><h3 style="color:#1e293b;margin-bottom:1.5rem">📊 Variable Relationships</h3>';
         graphs.forEach((g,i)=>{
-            html+=`<div style="margin-bottom:1.5rem"><h4 style="color:#475569;font-size:0.9rem;margin-bottom:0.25rem">${g.title}</h4>
-                <p style="font-size:0.78rem;color:#64748b;margin-bottom:0.5rem">Held constant: ${Object.entries(g.baseValues).map(([k,v])=>`${k}=${v}`).join(', ')}</p>
-                <div class="graph-container"><canvas id="ch_${i}"></canvas></div></div>`;
+            html+=`<div style="margin-bottom:2rem;padding:1rem;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0">
+                <h4 style="color:#1e293b;font-size:0.95rem;margin-bottom:0.25rem;font-weight:600">${g.title || `Graph ${i+1}`}</h4>
+                <p style="font-size:0.78rem;color:#64748b;margin-bottom:0.75rem">Constants: ${Object.entries(g.baseValues || {}).map(([k,v])=>`${k} = ${v}`).join(', ') || 'N/A'}</p>
+                <div class="graph-container" id="ch_${i}" style="position:relative;width:100%;margin-bottom:0.75rem">
+                </div>
+            </div>`;
         });
         html+='</div>';
         box.innerHTML=html;
-        graphs.forEach((g,i)=>new Chart(document.getElementById(`ch_${i}`).getContext('2d'),{type:'line',
-            data:{labels:g.xValues.map(String),datasets:[{label:`${g.yVariable.name} (${g.yVariable.unit})`,data:g.yValues,borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,0.08)',borderWidth:2.5,pointRadius:4,tension:0.4}]},
-            options:{responsive:true,plugins:{legend:{position:'top'}},scales:{x:{title:{display:true,text:`${g.xVariable.name} (${g.xVariable.unit})`},grid:{color:'rgba(0,0,0,0.05)'}},y:{title:{display:true,text:`${g.yVariable.name} (${g.yVariable.unit})`},grid:{color:'rgba(0,0,0,0.05)'}}}}
-        }));
-    } catch(e){ box.innerHTML=`<div class="error-msg">Graph error: ${e.message}</div>`; }
+        
+        // Create SVG charts with proper scaling
+        graphs.forEach((g,i)=>{
+            const container = document.getElementById(`ch_${i}`).parentElement;
+            const xVals = g.xValues || [];
+            const yVals = g.yValues || [];
+            
+            if (xVals.length === 0 || yVals.length === 0) {
+                container.innerHTML = '<p style="color:#64748b;font-size:0.85rem">No data points to display</p>';
+                return;
+            }
+            
+            // Calculate scaling
+            const yMin = Math.min(...yVals);
+            const yMax = Math.max(...yVals);
+            const yRange = yMax - yMin;
+            const yPadding = Math.max(yRange * 0.15, 1);
+            const yScaled = [yMin - yPadding, yMax + yPadding];
+            
+            const xMin = Math.min(...xVals);
+            const xMax = Math.max(...xVals);
+            const xRange = xMax - xMin;
+            const xPadding = Math.max(xRange * 0.1, 1);
+            const xScaled = [xMin - xPadding, xMax + xPadding];
+            
+            // SVG dimensions
+            const w = 500, h = 280;
+            const margins = {top: 20, right: 30, bottom: 50, left: 70};
+            const plotW = w - margins.left - margins.right;
+            const plotH = h - margins.top - margins.bottom;
+            
+            // Helper to scale values
+            const scaleX = (v) => margins.left + ((v - xScaled[0]) / (xScaled[1] - xScaled[0])) * plotW;
+            const scaleY = (v) => margins.top + plotH - ((v - yScaled[0]) / (yScaled[1] - yScaled[0])) * plotH;
+            
+            // Build SVG
+            let svg = `<svg width="100%" height="100%" viewBox="0 0 ${w} ${h}" style="max-width:100%;height:auto">
+                <!-- Background -->
+                <rect width="${w}" height="${h}" fill="#fff"/>
+                
+                <!-- Grid lines -->
+                <g stroke="rgba(0,0,0,0.05)" stroke-width="0.5">`;
+            
+            // Y-axis grid
+            for (let i = 0; i <= 5; i++) {
+                const y = yScaled[0] + (yScaled[1] - yScaled[0]) * (i / 5);
+                const py = scaleY(y);
+                svg += `<line x1="${margins.left}" y1="${py}" x2="${w - margins.right}" y2="${py}"/>`;
+            }
+            
+            svg += `</g>
+                
+                <!-- Axes -->
+                <line x1="${margins.left}" y1="${margins.top}" x2="${margins.left}" y2="${h - margins.bottom}" stroke="#333" stroke-width="1.5"/>
+                <line x1="${margins.left}" y1="${h - margins.bottom}" x2="${w - margins.right}" y2="${h - margins.bottom}" stroke="#333" stroke-width="1.5"/>
+                
+                <!-- Axis labels -->
+                <text x="${w/2}" y="${h - 5}" text-anchor="middle" font-size="12" fill="#475569" font-weight="500">${g.xVariable?.name || 'X'} (${g.xVariable?.unit || ''})</text>
+                <text x="15" y="${h/2}" text-anchor="middle" dy="0.3em" transform="rotate(-90 15 ${h/2})" font-size="12" fill="#475569" font-weight="500">${g.yVariable?.name || 'Y'} (${g.yVariable?.unit || ''})</text>
+                
+                <!-- Y-axis ticks and labels -->
+                <g font-size="10" fill="#64748b">`;
+            
+            for (let i = 0; i <= 5; i++) {
+                const y = yScaled[0] + (yScaled[1] - yScaled[0]) * (i / 5);
+                const py = scaleY(y);
+                svg += `<line x1="${margins.left - 5}" y1="${py}" x2="${margins.left}" y2="${py}" stroke="#333" stroke-width="1"/>
+                        <text x="${margins.left - 10}" y="${py}" text-anchor="end" dy="0.3em">${y.toFixed(1)}</text>`;
+            }
+            
+            svg += `</g>
+                
+                <!-- X-axis ticks and labels -->
+                <g font-size="10" fill="#64748b">`;
+            
+            const numXTicks = Math.min(xVals.length, 6);
+            for (let i = 0; i < xVals.length; i += Math.max(1, Math.floor(xVals.length / numXTicks))) {
+                const px = scaleX(xVals[i]);
+                svg += `<line x1="${px}" y1="${h - margins.bottom}" x2="${px}" y2="${h - margins.bottom + 5}" stroke="#333" stroke-width="1"/>
+                        <text x="${px}" y="${h - margins.bottom + 15}" text-anchor="middle">${typeof xVals[i] === 'number' ? xVals[i].toFixed(2) : xVals[i]}</text>`;
+            }
+            
+            svg += `</g>
+                
+                <!-- Data points and line -->
+                <g>
+                    <polyline points="`;
+            
+            for (let i = 0; i < xVals.length; i++) {
+                const px = scaleX(xVals[i]);
+                const py = scaleY(yVals[i]);
+                if (i > 0) svg += ' ';
+                svg += `${px},${py}`;
+            }
+            
+            svg += `" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    
+                    <!-- Data point circles -->`;
+            
+            for (let i = 0; i < xVals.length; i++) {
+                const px = scaleX(xVals[i]);
+                const py = scaleY(yVals[i]);
+                svg += `<circle cx="${px}" cy="${py}" r="4" fill="#2563eb" stroke="#fff" stroke-width="1.5"/>`;
+            }
+            
+            svg += `</g>
+            </svg>`;
+            
+            container.innerHTML = svg;
+        });
+    } catch(e){ 
+        logger.error('Graph generation failed', { error: e.message, currentCalc });
+        box.innerHTML=`<div class="error-msg">⚠️ Graph error: ${e.message}</div>`; 
+    }
 }
 
 async function verifyFormula() {
