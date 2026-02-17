@@ -2265,27 +2265,59 @@ function evaluateFormula(formula, inputs) {
     }
 
     // Unicode math to JS
+    // ① Scientific notation with Unicode superscripts — MUST run before digit replacements
+    //   e.g.  1.62 × 10⁻³  →  1.62*(1e-3)      10⁶  →  (1e6)
     expr = expr
+        .replace(/\b10\u207B([⁰¹²³⁴⁵⁶⁷⁸⁹]+)/g, (_, e) =>
+            '(1e-' + [...e].map(c => '⁰¹²³⁴⁵⁶⁷⁸⁹'.indexOf(c)).join('') + ')')
+        .replace(/\b10([⁰¹²³⁴⁵⁶⁷⁸⁹]+)/g, (_, e) =>
+            '(1e' + [...e].map(c => '⁰¹²³⁴⁵⁶⁷⁸⁹'.indexOf(c)).join('') + ')')
+    // ② Superscript digits on variables / closing parens  — e.g. d⁵ → d**5, (x)² → (x)**2
+        .replace(/([A-Za-z0-9_\)])([⁰¹²³⁴⁵⁶⁷⁸⁹]+)/g, (_, b, s) =>
+            b + '**' + [...s].map(c => '⁰¹²³⁴⁵⁶⁷⁸⁹'.indexOf(c)).join(''))
+    // ③ Any remaining superscript minus (U+207B) not consumed above
+        .replace(/\u207B/g, '-')
+    // ④ Operators and functions
         .replace(/×/g, '*').replace(/÷/g, '/')
-        .replace(/⁰/g,'**0').replace(/¹/g,'**1').replace(/²/g,'**2')
-        .replace(/³/g,'**3').replace(/⁴/g,'**4').replace(/⁵/g,'**5')
-        .replace(/⁶/g,'**6').replace(/⁷/g,'**7').replace(/⁸/g,'**8')
-        .replace(/⁹/g,'**9')
-        .replace(/\^(\d+\.?\d*)/g,'**$1')
-        .replace(/√\(([^)]+)\)/g,'Math.sqrt($1)')
-        .replace(/√([A-Za-z0-9_.]+)/g,'Math.sqrt($1)')
-        .replace(/ln\(/g,'Math.log(')
-        .replace(/log10\(/g,'Math.log10(')
-        .replace(/log\(/g,'Math.log10(')
-        .replace(/sin\(/g,'Math.sin(')
-        .replace(/cos\(/g,'Math.cos(')
-        .replace(/tan\(/g,'Math.tan(')
-        .replace(/atan\(/g,'Math.atan(')
-        .replace(/exp\(/g,'Math.exp(')
+        .replace(/√\(([^)]+)\)/g, 'Math.sqrt($1)')
+        .replace(/√([A-Za-z0-9_.]+)/g, 'Math.sqrt($1)')
+        .replace(/ln\(/g, 'Math.log(')
+        .replace(/log10\(/g, 'Math.log10(')
+        .replace(/log\(/g, 'Math.log10(')
+        .replace(/sin\(/g, 'Math.sin(')
+        .replace(/cos\(/g, 'Math.cos(')
+        .replace(/tan\(/g, 'Math.tan(')
+        .replace(/atan\(/g, 'Math.atan(')
+        .replace(/exp\(/g, 'Math.exp(')
         .replace(/π/g, 'Math.PI')
         .replace(/pi/gi, 'Math.PI')
         .replace(/ṁ/g, 'm_dot')
         .replace(/Σ[A-Za-z_]+/g, match => inputs[match.slice(1)] ?? match);
+
+    // ⑤ Convert ^ to ** with proper nested-parenthesis matching
+    //   Handles: x^2, x^0.5, x^(n), x^((γ-1)/γ), x^(y^z) — single regex can't do this
+    expr = (function convertCaret(s) {
+        let r = '', i = 0;
+        while (i < s.length) {
+            if (s[i] === '^') {
+                r += '**'; i++;
+                if (i < s.length && s[i] === '(') {
+                    // consume everything up to and including the matching ')'
+                    let depth = 0, j = i;
+                    while (j < s.length) {
+                        if (s[j] === '(') depth++;
+                        else if (s[j] === ')') { if (--depth === 0) { j++; break; } }
+                        j++;
+                    }
+                    r += s.slice(i, j); i = j;
+                }
+                // if not followed by '(' the next token (digit/letter) is the exponent — just continue
+            } else {
+                r += s[i++];
+            }
+        }
+        return r;
+    })(expr);
 
     // Replace any remaining standalone named symbols that are in inputs but not yet subbed
     for (const sym of syms) {
