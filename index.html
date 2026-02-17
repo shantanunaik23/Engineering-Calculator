@@ -1501,12 +1501,15 @@ async function callAI(prompt) {
         return r.choices[0].message.content;
     }
 
-    // For cloud APIs: use local proxy server instead of direct fetch (avoids CORS issues)
+    // For cloud APIs: use proxy server (works on localhost or production)
     const safeKey = (aiCfg.apiKey || '').replace(/[^\x20-\x7E]/g, '').trim();
     if (!safeKey) throw new Error('API key is missing or invalid — please reconnect');
 
     try {
-        const res = await fetch('/api/ai-call', {
+        // Use current domain (localhost:3000, vercel-app.vercel.app, etc.)
+        const apiUrl = `${window.location.origin}/api/ai-call`;
+        
+        const res = await fetch(apiUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -1531,7 +1534,7 @@ async function callAI(prompt) {
     } catch (error) {
         // If it's a network error (e.g., server not running), provide helpful message
         if (error instanceof TypeError && error.message.includes('fetch')) {
-            throw new Error('Cannot reach local server. Start the server with: npm start');
+            throw new Error('Cannot reach server. On localhost: ensure "npm start" is running. On Vercel: check server logs.');
         }
         throw error;
     }
