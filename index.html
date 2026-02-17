@@ -1644,10 +1644,10 @@ const logger = {
 
 const INTENT_MAP = [
     // PIPE / BEAM DEFLECTION
-    { patterns: ['deflection of a pipe','pipe deflection','pipe sag','pipe bending','pipe span','pipe support spacing','pipe sagging between supports'],
+    { patterns: ['deflection of a pipe','pipe deflection','pipe sag','pipe bending','pipe span','pipe support spacing','pipe sagging between supports','beam deflection','calculate beam deflection'],
       keys: ['beam deflection udl simply supported','second moment hollow circle','pipe internal area'],
-      title: 'Pipe Deflection Between Supports',
-      note: 'For a pipe spanning between supports under its own weight and contents. Step 1 calculates the pipe cross-section geometry (I), Step 2 calculates the weight loading (w), Step 3 calculates the mid-span deflection.' },
+      title: 'Beam/Pipe Deflection',
+      note: 'For a beam or pipe spanning between supports under its own weight and contents. Step 1 calculates the cross-section geometry (I), Step 2 calculates the weight loading (w), Step 3 calculates the mid-span deflection.' },
 
     { patterns: ['pipe deflection point load','pipe deflection concentrated'],
       keys: ['beam deflection point load midspan','second moment hollow circle'],
@@ -1655,26 +1655,26 @@ const INTENT_MAP = [
       note: 'Deflection of a pipe span under a concentrated (point) load at mid-span.' },
 
     // PIPE SIZING / FLOW
-    { patterns: ['pipe sizing','size a pipe','pipe diameter','what diameter pipe','select pipe size','pipe selection'],
-      keys: ['pressure drop darcy weisbach','reynolds number','pipe internal area','pipe velocity from flow'],
-      title: 'Pipe Sizing Workflow',
-      note: 'Full pipe sizing: calculate required area from velocity, check Reynolds number, then verify pressure drop. Aim for velocity 1–3 m/s water, Re > 4000 turbulent.' },
+    { patterns: ['pipe sizing','size a pipe','pipe diameter','what diameter pipe','select pipe size','pipe selection','reynolds number','calculate reynolds number'],
+      keys: ['reynolds number','flow rate pipe continuity','pipe internal area','pipe velocity from flow'],
+      title: 'Reynolds Number & Flow Analysis',
+      note: 'Calculate Reynolds number to determine flow regime (laminar < 2300, turbulent > 4000). Critical for pipe sizing and pressure drop calculations.' },
 
-    { patterns: ['pressure drop pipe','pipe pressure loss','friction loss pipe','pipe head loss'],
+    { patterns: ['pressure drop pipe','pipe pressure loss','friction loss pipe','pipe head loss','pressure drop','pressure drop in pipe'],
       keys: ['pressure drop darcy weisbach','swamee jain friction factor','reynolds number'],
       title: 'Pipe Pressure Drop Calculation',
       note: 'Step 1: Calculate Reynolds number. Step 2: Get friction factor. Step 3: Calculate pressure drop using Darcy-Weisbach.' },
 
-    { patterns: ['flow rate pipe','water flow','pipe flow rate','flow in pipe'],
+    { patterns: ['flow rate pipe','water flow','pipe flow rate','flow in pipe','calculate flow rate through','40nb pipe'],
       keys: ['flow rate pipe continuity','reynolds number','pipe velocity from flow'],
       title: 'Pipe Flow Rate',
       note: 'Calculate flow rate from pipe geometry and velocity, then verify flow regime with Reynolds number.' },
 
     // HEAT TRANSFER
-    { patterns: ['heat loss pipe','pipe heat loss','insulated pipe heat loss','pipe insulation'],
-      keys: ['heat loss pipe insulated','pipe thermal expansion'],
-      title: 'Insulated Pipe Heat Loss',
-      note: 'Heat loss per metre from an insulated pipe, with thermal expansion check for the operating temperature range.' },
+    { patterns: ['heat loss pipe','pipe heat loss','insulated pipe heat loss','pipe insulation','heat transfer through a wall','heat transfer wall','calculate heat transfer','heat conduction'],
+      keys: ['heat conduction fourier','thermal resistance wall','overall heat transfer coefficient'],
+      title: 'Heat Transfer Through Wall',
+      note: 'Heat conduction through walls or structures using Fourier equation and thermal resistance method.' },
 
     { patterns: ['heat exchanger design','heat exchanger area','size a heat exchanger','heat exchanger sizing'],
       keys: ['heat exchanger duty','log mean temperature difference','heat exchanger area required'],
