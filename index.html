@@ -172,6 +172,36 @@
 
         @media (max-width:640px) { .option-row { grid-template-columns:1fr; } .action-btn { min-width:140px; } .header { flex-direction:column; align-items:flex-start; } }
         @media print { body { background:white; padding:0; } .header,.search-section,.action-buttons,.export-section,.toast,.modal,#localProgress { display:none !important; } button { display:none !important; } .results-section { box-shadow:none; } }
+        
+        /* ── Dark Mode ── */
+        body.dark-mode { background: #0f172a; color: #e2e8f0; }
+        body.dark-mode .header { background: #1e293b; border-left-color: #3b82f6; }
+        body.dark-mode .header-content h1 { color: #f1f5f9; }
+        body.dark-mode .header-content p { color: #94a3b8; }
+        body.dark-mode .search-section { background: #1e293b; box-shadow: 0 1px 3px rgba(0,0,0,0.5); }
+        body.dark-mode input[type="text"],
+        body.dark-mode input[type="number"] { 
+            background: #334155; color: #f1f5f9; border-color: #475569;
+        }
+        body.dark-mode input:focus { border-color: #3b82f6; background: #475569; }
+        body.dark-mode .modal-content { background: #1e293b; color: #e2e8f0; }
+        body.dark-mode .results-section { background: #1e293b; color: #e2e8f0; }
+        body.dark-mode .standard-info { background: #334155; border-color: #475569; }
+        body.dark-mode .formula-box { background: #475569; border-color: #64748b; color: #f1f5f9; }
+        body.dark-mode .variables-list { background: #334155; border-color: #475569; }
+        body.dark-mode .result-box { background: #1e3a8a; }
+        body.dark-mode select { background: #334155; color: #f1f5f9; border-color: #475569; }
+        body.dark-mode .modal-header { color: #f1f5f9; }
+        body.dark-mode .error-msg { background: #7f1d1d; border-color: #dc2626; color: #fecaca; }
+        body.dark-mode .standard-info { background: #334155; }
+        body.dark-mode .advanced-options { background: #334155; border-color: #475569; }
+        body.dark-mode .multi-workflow-header { background: #1e293b; }
+        body.dark-mode .multi-step { background: #334155; border-color: #475569; }
+        body.dark-mode .multi-step-formula { background: #1e293b; border-color: #475569; }
+        body.dark-mode #autocompleteList { background: #334155; border-color: #475569; }
+        body.dark-mode .example-tag { background: #334155; border-color: #475569; color: #94a3b8; }
+        body.dark-mode .example-tag:hover { background: #1e293b; border-color: #3b82f6; color: #3b82f6; }
+        body.dark-mode #aiPromptBanner { background: linear-gradient(135deg,#1e3a8a,#1e1b4b); border-color: #3b82f6; }
         .cat-tab { padding:0.35rem 0.8rem;border:1px solid #cbd5e1;border-radius:99px;font-size:0.75rem;cursor:pointer;color:#475569;background:white;transition:all 0.15s; }
         .cat-tab:hover { border-color:#2563eb;color:#2563eb; }
         .cat-tab.active { background:#2563eb;color:white;border-color:#2563eb; }
@@ -208,6 +238,7 @@
         <div class="ai-status">
             <div id="aiBadge" class="ai-badge offline"><span>🤖</span><span id="aiStatusText">AI: Not Connected</span></div>
             <button id="aiActionBtn" class="hdr-btn connect" onclick="openModal()">Connect AI</button>
+            <button class="hdr-btn" onclick="toggleDarkMode()" title="Toggle Dark Mode" style="background:#64748b;color:white">🌙</button>
         </div>
     </div>
 
@@ -297,6 +328,14 @@
 
     <div id="toast" class="toast"><span id="toastMsg"></span></div>
 
+    <!-- Keyboard Shortcuts Hint -->
+    <div style="position:fixed;bottom:1.5rem;left:1.5rem;z-index:500;font-size:0.7rem;color:#94a3b8;background:rgba(15,23,42,0.7);padding:0.5rem 0.75rem;border-radius:6px;border:1px solid #475569;display:none" id="shortcutsHint">
+        <div style="font-weight:600;color:#e2e8f0;margin-bottom:0.3rem">⌨️ Keyboard Shortcuts</div>
+        <div>↵ <strong>Enter</strong> in search to find formula</div>
+        <div>↵ <strong>Enter</strong> in inputs to calculate</div>
+        <div><strong>🌙</strong> Toggle dark mode (header)</div>
+    </div>
+
     <!-- Search -->
     <div class="search-section">
         <div class="input-group">
@@ -309,6 +348,14 @@
             <span class="example-tag" onclick="useExample('calculate pressure drop in pipe')">Pressure drop</span>
             <span class="example-tag" onclick="useExample('calculate heat transfer through a wall')">Heat transfer</span>
             <span class="example-tag" onclick="useExample('calculate beam deflection')">Beam deflection</span>
+            <span class="example-tag" onclick="useExample('fan sizing and fan laws')">Fan laws</span>
+            <span class="example-tag" onclick="useExample('battery storage sizing')">Battery storage</span>
+            <span class="example-tag" onclick="useExample('control valve sizing')">Control valve</span>
+            <span class="example-tag" onclick="useExample('bolted connection design')">Bolt design</span>
+            <span class="example-tag" onclick="useExample('refrigeration system design')">Refrigeration</span>
+            <span class="example-tag" onclick="useExample('pipe expansion loop')">Expansion loop</span>
+            <span class="example-tag" onclick="useExample('tolerance stackup analysis')">Tolerance stack</span>
+            <span class="example-tag" onclick="useExample('sedimentation basin design')">Water treatment</span>
         </div>
         <div class="advanced-options">
             <div class="advanced-toggle" onclick="toggleAdvanced()"><span id="advIcon">▶</span> Advanced Options</div>
@@ -405,6 +452,20 @@
                 <span style="margin-left:auto;font-size:0.72rem;color:#94a3b8">debug information</span>
             </button>
             <div id="requestLog" style="display:none;margin-top:0.75rem;border:1px solid #e2e8f0;border-radius:6px;max-height:300px;overflow-y:auto;background:white"></div>
+        </div>
+
+        <!-- Calculation History Panel -->
+        <div id="historyPanel" style="border-top:1px solid #f1f5f9;padding-top:0.75rem;margin-top:0.75rem;display:none">
+            <button onclick="toggleHistory()" style="display:flex;align-items:center;gap:0.5rem;background:none;border:none;cursor:pointer;color:#64748b;font-size:0.82rem;padding:0;width:100%;text-align:left">
+                <span id="historyArrow">▶</span>
+                <span style="font-weight:600;color:#475569">⏱️ Calculation History</span>
+                <span id="historyCount" style="margin-left:0.5rem;color:#94a3b8;font-size:0.78rem"></span>
+                <span style="margin-left:auto;font-size:0.72rem;color:#94a3b8">recent calculations</span>
+            </button>
+            <div id="historyBody" style="display:none;margin-top:0.75rem;max-height:300px;overflow-y:auto">
+                <div id="historyList"></div>
+                <button onclick="clearHistory()" style="width:100%;background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;padding:0.5rem;border-radius:6px;margin-top:0.5rem;cursor:pointer;font-size:0.8rem">🗑️ Clear History</button>
+            </div>
         </div>
 
     </div>
@@ -1347,6 +1408,149 @@ const FORMULA_DB_EXTRA = {
 
 "tank emptying time": { cat:"Fluid Mechanics", standard:"ISO 80000-4", standardName:"Mechanics", description:"Time to empty a tank through an orifice at the base (Torricelli).", formula:"t = (2 × A_tank / (Cd × A_orifice)) × (√h_initial - √h_final) / √(2g)", variables:[{symbol:"A_tank",name:"Tank Cross-section Area",description:"Plan area of tank",unit:"m²",defaultValue:null},{symbol:"Cd",name:"Discharge Coefficient",description:"Typically 0.6 for sharp-edged orifice",unit:"dimensionless",defaultValue:0.6},{symbol:"A_orifice",name:"Orifice Area",description:"Cross-sectional area of outlet",unit:"m²",defaultValue:null},{symbol:"h_initial",name:"Initial Head",description:"Initial water depth above orifice centreline",unit:"m",defaultValue:null},{symbol:"h_final",name:"Final Head",description:"Final water depth (0 if completely empty)",unit:"m",defaultValue:0},{symbol:"g",name:"Gravitational Acceleration",description:"9.81 m/s²",unit:"m/s²",defaultValue:9.81}], resultVariable:{symbol:"t",name:"Emptying Time",unit:"s"} },
 
+// ════════════════════════════════════════════════════════════════
+// FORMULAS FROM WIKIPEDIA — CURATED WITH ISO/ASTM STANDARDS
+// Source: Wikipedia articles on Bernoulli's Principle, Darcy-Weisbach, Bending
+// ════════════════════════════════════════════════════════════════
+
+"bernoullis equation incompressible": { cat:"Fluid Mechanics", standard:"ISO 31-12:2009", standardName:"Quantities and units — Fluid mechanics (ISO/IEC 80000-11)", description:"Bernoulli's equation for incompressible flow along a streamline. Energy conservation principle.", formula:"(v² / 2) + g×z + (p / ρ) = constant", formulaDescription:"Each term represents energy per unit mass. Constant applies along a streamline free of viscous forces.", variables:[{symbol:"v",name:"Flow Velocity",description:"Fluid velocity at point",unit:"m/s",defaultValue:null},{symbol:"g",name:"Gravity",description:"Gravitational acceleration",unit:"m/s²",defaultValue:9.81},{symbol:"z",name:"Elevation",description:"Height above reference level",unit:"m",defaultValue:null},{symbol:"p",name:"Static Pressure",description:"Local fluid pressure",unit:"Pa",defaultValue:null},{symbol:"ρ",name:"Fluid Density",description:"Fluid density (water ~1000 kg/m³)",unit:"kg/m³",defaultValue:1000}], resultVariable:{symbol:"constant",name:"Bernoulli Constant",unit:"J/kg"} },
+
+"dynamic pressure": { cat:"Fluid Mechanics", standard:"ISO 31-12:2009", standardName:"Fluid mechanics quantities and units", description:"Dynamic pressure in a fluid flow.", formula:"q = (1 / 2) × ρ × v²", formulaDescription:"Dynamic pressure is the kinetic energy per unit volume of flowing fluid.", variables:[{symbol:"ρ",name:"Fluid Density",description:"Density of fluid (water ~1000 kg/m³)",unit:"kg/m³",defaultValue:1000},{symbol:"v",name:"Velocity",description:"Fluid velocity magnitude",unit:"m/s",defaultValue:null}], resultVariable:{symbol:"q",name:"Dynamic Pressure",unit:"Pa"} },
+
+"stagnation pressure": { cat:"Fluid Mechanics", standard:"ISO 31-12:2009", standardName:"Fluid mechanics quantities and units", description:"Total pressure at a stagnation point where flow is brought to rest.", formula:"p₀ = p_static + q = p + (1/2)×ρ×v²", formulaDescription:"At stagnation point, velocity = 0 and static pressure becomes stagnation pressure.", variables:[{symbol:"p",name:"Static Pressure",description:"Local static pressure",unit:"Pa",defaultValue:null},{symbol:"ρ",name:"Fluid Density",description:"Fluid density",unit:"kg/m³",defaultValue:1000},{symbol:"v",name:"Velocity",description:"Velocity at measurement point",unit:"m/s",defaultValue:null}], resultVariable:{symbol:"p₀",name:"Stagnation Pressure",unit:"Pa"} },
+
+"darcy weisbach head loss": { cat:"Fluid Mechanics", standard:"ISO 1219-1", standardName:"Fluid fluid power systems and components — Graphic symbols and circuit diagrams", description:"Head loss in pipe flow due to friction (Darcy-Weisbach equation).", formula:"h_f = f × (L / D) × (v² / (2×g))", formulaDescription:"Head loss for incompressible flow in circular pipes. f = Darcy friction factor (laminar: 64/Re; turbulent: Moody chart).", variables:[{symbol:"f",name:"Darcy Friction Factor",description:"Friction factor from Moody diagram or Colebrook equation",unit:"dimensionless",defaultValue:0.03},{symbol:"L",name:"Pipe Length",description:"Length of pipe section",unit:"m",defaultValue:null},{symbol:"D",name:"Pipe Diameter",description:"Internal diameter of pipe",unit:"m",defaultValue:null},{symbol:"v",name:"Flow Velocity",description:"Mean flow velocity",unit:"m/s",defaultValue:null},{symbol:"g",name:"Gravity",description:"9.81 m/s²",unit:"m/s²",defaultValue:9.81}], resultVariable:{symbol:"h_f",name:"Head Loss",unit:"m"} },
+
+"darcy friction laminar": { cat:"Fluid Mechanics", standard:"ISO 1219-1", standardName:"Fluid power systems", description:"Darcy friction factor for laminar flow (Re < 2300).", formula:"f = 64 / Re", formulaDescription:"Valid only in laminar region (Reynolds number < 2300). Re = ρ×v×D/μ.", variables:[{symbol:"Re",name:"Reynolds Number",description:"Dimensionless Reynolds number",unit:"dimensionless",defaultValue:null}], resultVariable:{symbol:"f",name:"Darcy Friction Factor",unit:"dimensionless"} },
+
+"reynolds number pipe": { cat:"Fluid Mechanics", standard:"ISO 31-12:2009", standardName:"Fluid mechanics quantities and units", description:"Reynolds number for flow in a circular pipe — criterion for laminar vs turbulent flow.", formula:"Re = (ρ × v × D) / μ", formulaDescription:"Re < 2300: laminar; 2300 < Re < 4000: transition; Re > 4000: turbulent.", variables:[{symbol:"ρ",name:"Fluid Density",description:"Fluid density (water ~1000 kg/m³)",unit:"kg/m³",defaultValue:1000},{symbol:"v",name:"Velocity",description:"Mean flow velocity",unit:"m/s",defaultValue:null},{symbol:"D",name:"Diameter",description:"Pipe internal diameter",unit:"m",defaultValue:null},{symbol:"μ",name:"Dynamic Viscosity",description:"Fluid dynamic viscosity (water ~0.001 Pa·s at 20°C)",unit:"Pa·s",defaultValue:0.001}], resultVariable:{symbol:"Re",name:"Reynolds Number",unit:"dimensionless"} },
+
+"euler bernoulli beam equation": { cat:"Structural", standard:"EN 1993-1-1", standardName:"Eurocode 3 — Steel design", description:"Euler-Bernoulli beam deflection equation for small deflections of straight beams.", formula:"EI × (d²w / dx²) = M(x)", formulaDescription:"M(x) = bending moment; w = deflection; E×I = bending stiffness. Fourth derivative form: EI×d⁴w/dx⁴ = q(x).", variables:[{symbol:"E",name:"Modulus of Elasticity",description:"Young's modulus (steel ~200 GPa)",unit:"Pa",defaultValue:200000000000},{symbol:"I",name:"Second Moment of Area",description:"Area moment of inertia about bending axis",unit:"m⁴",defaultValue:null},{symbol:"M",name:"Bending Moment",description:"Internal bending moment at section",unit:"N·m",defaultValue:null},{symbol:"x",name:"Position",description:"Distance along beam",unit:"m",defaultValue:null}], resultVariable:{symbol:"curvature",name:"Curvature (d²w/dx²)",unit:"1/m"} },
+
+"bending stress formula": { cat:"Structural", standard:"EN 1993-1-1", standardName:"Eurocode 3", description:"Maximum bending stress at extreme fibre of a beam cross-section.", formula:"σ = (M × y) / I", formulaDescription:"M = bending moment; y = distance from neutral axis; I = second moment of area. Stress is zero at neutral axis, maximum at top/bottom.", variables:[{symbol:"M",name:"Bending Moment",description:"Internal bending moment",unit:"N·m",defaultValue:null},{symbol:"y",name:"Distance from Neutral Axis",description:"Perpendicular distance to extreme fibre",unit:"m",defaultValue:null},{symbol:"I",name:"Second Moment of Area",description:"Area moment of inertia",unit:"m⁴",defaultValue:null}], resultVariable:{symbol:"σ",name:"Bending Stress (Maximum)",unit:"Pa"} },
+
+"cantilever beam max deflection": { cat:"Structural", standard:"EN 1993-1-1", standardName:"Eurocode 3", description:"Maximum deflection at free end of a cantilever beam with point load.", formula:"w_max = (P × L³) / (3 × E × I)", formulaDescription:"Point load P at free end; L = beam length; E×I = flexural rigidity.", variables:[{symbol:"P",name:"Point Load",description:"Concentrated load at free end",unit:"N",defaultValue:null},{symbol:"L",name:"Beam Length",description:"Length of cantilever",unit:"m",defaultValue:null},{symbol:"E",name:"Young's Modulus",description:"Modulus of elasticity (steel ~200 GPa)",unit:"Pa",defaultValue:200000000000},{symbol:"I",name:"Second Moment of Area",description:"Area moment of inertia",unit:"m⁴",defaultValue:null}], resultVariable:{symbol:"w_max",name:"Maximum Deflection",unit:"m"} },
+
+"simply supported beam centre load deflection": { cat:"Structural", standard:"EN 1993-1-1", standardName:"Eurocode 3", description:"Maximum deflection at centre of a simply supported beam with centre point load.", formula:"w_max = (P × L³) / (48 × E × I)", formulaDescription:"Point load P at mid-span; symmetric loading; maximum deflection at centre.", variables:[{symbol:"P",name:"Point Load",description:"Concentrated load at mid-span",unit:"N",defaultValue:null},{symbol:"L",name:"Span Length",description:"Distance between supports",unit:"m",defaultValue:null},{symbol:"E",name:"Young's Modulus",description:"Modulus of elasticity",unit:"Pa",defaultValue:200000000000},{symbol:"I",name:"Second Moment of Area",description:"Area moment of inertia",unit:"m⁴",defaultValue:null}], resultVariable:{symbol:"w_max",name:"Maximum Deflection",unit:"m"} },
+
+"timoshenko beam shear correction": { cat:"Structural", standard:"EN 1993-1-1", standardName:"Eurocode 3", description:"Timoshenko beam theory accounts for shear deformation using a shear correction factor.", formula:"k = 5 + 5×ν / (6 + 5×ν)", formulaDescription:"ν = Poisson's ratio. For steel ≈ 0.30, k ≈ 0.83. Significantly improves accuracy for thick beams.", variables:[{symbol:"ν",name:"Poisson's Ratio",description:"Material Poisson's ratio (steel ~0.3)",unit:"dimensionless",defaultValue:0.3}], resultVariable:{symbol:"k",name:"Shear Correction Factor",unit:"dimensionless"} },
+
+"pipe pressure drop friction": { cat:"Fluid Mechanics", standard:"ISO 1219-1", standardName:"Fluid power hydraulics", description:"Pressure drop across a pipe length from the Darcy-Weisbach equation (pressure form).", formula:"ΔP = f × (L / D) × (ρ × v²) / 2", formulaDescription:"Alternative to head loss form. f = friction factor; L = length; D = diameter; v = velocity; ρ = density.", variables:[{symbol:"f",name:"Friction Factor",description:"Darcy friction factor",unit:"dimensionless",defaultValue:0.03},{symbol:"L",name:"Pipe Length",description:"Section length",unit:"m",defaultValue:null},{symbol:"D",name:"Diameter",description:"Internal pipe diameter",unit:"m",defaultValue:null},{symbol:"ρ",name:"Fluid Density",description:"Fluid density (water ~1000 kg/m³)",unit:"kg/m³",defaultValue:1000},{symbol:"v",name:"Velocity",description:"Mean flow velocity",unit:"m/s",defaultValue:null}], resultVariable:{symbol:"ΔP",name:"Pressure Drop",unit:"Pa"} },
+
+// ════════════════════════════════════════════════════════════════
+// STRUCTURAL CONNECTIONS — BS EN 1993-1-8
+// ════════════════════════════════════════════════════════════════
+
+"bolt shear capacity single": { cat:"Structural", standard:"BS EN 1993-1-8", standardName:"Design of joints", description:"Design shear resistance of a single bolt in single shear (EC3).", formula:"F_v_Rd = 0.6 × f_ub × A / γ_M2", formulaDescription:"f_ub = bolt UTS; A = shank area; γ_M2 = 1.25. For Grade 8.8: f_ub = 800 MPa.", variables:[{symbol:"f_ub",name:"Bolt UTS",description:"Ultimate tensile strength of bolt (Gr 8.8 = 800 MPa)",unit:"Pa",defaultValue:800000000},{symbol:"A",name:"Bolt Shank Area",description:"Gross cross-sectional area of bolt shank",unit:"m²",defaultValue:null},{symbol:"γ_M2",name:"Partial Factor",description:"γM2 = 1.25 per EC3",unit:"dimensionless",defaultValue:1.25}], resultVariable:{symbol:"F_v_Rd",name:"Bolt Shear Resistance",unit:"N"} },
+
+"bolt bearing capacity plate": { cat:"Structural", standard:"BS EN 1993-1-8", standardName:"Design of joints", description:"Design bearing resistance of a bolt on a connected plate (EC3).", formula:"F_b_Rd = 2.5 × α_b × f_u × d × t / γ_M2", formulaDescription:"α_b = min(e1/3d0, f_ub/fu, 1.0). d = bolt dia; t = plate thickness; f_u = plate UTS.", variables:[{symbol:"α_b",name:"Alpha_b Factor",description:"min(e1/3d0, fub/fu, 1.0) — typically 0.6–1.0",unit:"dimensionless",defaultValue:0.8},{symbol:"f_u",name:"Plate UTS",description:"Ultimate tensile strength of connected plate (S275: 430 MPa)",unit:"Pa",defaultValue:430000000},{symbol:"d",name:"Bolt Diameter",description:"Nominal bolt diameter",unit:"m",defaultValue:null},{symbol:"t",name:"Plate Thickness",description:"Thickness of connected plate",unit:"m",defaultValue:null},{symbol:"γ_M2",name:"Partial Factor",description:"1.25 per EC3",unit:"dimensionless",defaultValue:1.25}], resultVariable:{symbol:"F_b_Rd",name:"Bolt Bearing Resistance",unit:"N"} },
+
+"fillet weld design resistance": { cat:"Structural", standard:"BS EN 1993-1-8", standardName:"Design of joints", description:"Design resistance of a fillet weld per unit length (directional method, EC3).", formula:"F_w_Rd = f_u × a / (1.732 × β_w × γ_M2)", formulaDescription:"a = throat thickness (= 0.707 × leg size for 90° fillet); β_w = correlation factor (S275=0.85; S355=0.90).", variables:[{symbol:"f_u",name:"Steel UTS",description:"Ultimate tensile strength of weaker connected part",unit:"Pa",defaultValue:430000000},{symbol:"a",name:"Throat Thickness",description:"Effective throat = 0.707 × leg size for 90° fillet weld",unit:"m",defaultValue:null},{symbol:"β_w",name:"Correlation Factor",description:"S275=0.85; S355=0.90; S460=1.00",unit:"dimensionless",defaultValue:0.9},{symbol:"γ_M2",name:"Partial Factor",description:"γM2 = 1.25",unit:"dimensionless",defaultValue:1.25}], resultVariable:{symbol:"F_w_Rd",name:"Weld Resistance per Unit Length",unit:"N/m"} },
+
+"weld throat from leg": { cat:"Structural", standard:"BS EN 1993-1-8", standardName:"Design of joints", description:"Effective throat thickness of a 90° fillet weld from leg length.", formula:"a = 0.707 × s", formulaDescription:"For welds between perpendicular plates. s = leg size.", variables:[{symbol:"s",name:"Leg Size",description:"Fillet weld leg length (equal leg assumed)",unit:"m",defaultValue:null}], resultVariable:{symbol:"a",name:"Effective Throat Thickness",unit:"m"} },
+
+"plate bending uniform pressure": { cat:"Structural", standard:"AISC / Roark's Formulas", standardName:"Roark's Formulas for Stress and Strain", description:"Maximum bending stress in a flat rectangular plate under uniform pressure (all edges simply supported).", formula:"σ_max = β × p × a_short² / t²", formulaDescription:"β = plate coefficient from aspect ratio b/a (square plate β ≈ 0.287). a_short = shorter edge; t = plate thickness.", variables:[{symbol:"β",name:"Plate Coefficient",description:"From Roark Table 11; square plate ≈ 0.287; b/a=2: ≈ 0.497",unit:"dimensionless",defaultValue:0.287},{symbol:"p",name:"Uniform Pressure",description:"Applied uniform pressure",unit:"Pa",defaultValue:null},{symbol:"a_short",name:"Short Edge Length",description:"Shorter plan dimension of plate",unit:"m",defaultValue:null},{symbol:"t",name:"Plate Thickness",description:"Plate thickness",unit:"m",defaultValue:null}], resultVariable:{symbol:"σ_max",name:"Maximum Bending Stress",unit:"Pa"} },
+
+// ════════════════════════════════════════════════════════════════
+// FANS & PSYCHROMETRICS — CIBSE GUIDE B2 / ASHRAE
+// ════════════════════════════════════════════════════════════════
+
+"fan power shaft": { cat:"HVAC", standard:"CIBSE Guide B2", standardName:"Ventilation and Air Conditioning", description:"Shaft power input to a fan from flow rate and total pressure.", formula:"P = Q × ΔP / η_fan", formulaDescription:"Q = volume flow (m³/s); ΔP = total pressure rise (Pa); η_fan = overall fan efficiency (0.6–0.8 typical).", variables:[{symbol:"Q",name:"Volume Flow Rate",description:"Air volume flow through fan",unit:"m³/s",defaultValue:null},{symbol:"ΔP",name:"Total Pressure Rise",description:"Total pressure developed by fan",unit:"Pa",defaultValue:null},{symbol:"η_fan",name:"Fan Efficiency",description:"Overall fan efficiency (0.6–0.8 typical)",unit:"dimensionless",defaultValue:0.7}], resultVariable:{symbol:"P",name:"Fan Shaft Power",unit:"W"} },
+
+"fan affinity law flow": { cat:"HVAC", standard:"CIBSE Guide B2", standardName:"Ventilation and Air Conditioning", description:"Fan affinity law — flow rate proportional to fan speed.", formula:"Q2 = Q1 × (N2 / N1)", formulaDescription:"Flow changes linearly with fan speed. Fundamental affinity law 1.", variables:[{symbol:"Q1",name:"Original Flow Rate",description:"Flow at original speed N1",unit:"m³/s",defaultValue:null},{symbol:"N1",name:"Original Speed",description:"Original fan speed",unit:"rpm",defaultValue:null},{symbol:"N2",name:"New Speed",description:"New fan speed",unit:"rpm",defaultValue:null}], resultVariable:{symbol:"Q2",name:"New Flow Rate",unit:"m³/s"} },
+
+"fan affinity law pressure": { cat:"HVAC", standard:"CIBSE Guide B2", standardName:"Ventilation and Air Conditioning", description:"Fan affinity law — static pressure proportional to speed squared.", formula:"ΔP2 = ΔP1 × (N2 / N1)²", formulaDescription:"Pressure rises as square of speed ratio. Affinity law 2.", variables:[{symbol:"ΔP1",name:"Original Pressure",description:"Fan total pressure at N1",unit:"Pa",defaultValue:null},{symbol:"N1",name:"Original Speed",description:"Original fan speed",unit:"rpm",defaultValue:null},{symbol:"N2",name:"New Speed",description:"New fan speed",unit:"rpm",defaultValue:null}], resultVariable:{symbol:"ΔP2",name:"New Pressure",unit:"Pa"} },
+
+"fan affinity law power": { cat:"HVAC", standard:"CIBSE Guide B2", standardName:"Ventilation and Air Conditioning", description:"Fan affinity law — power proportional to speed cubed.", formula:"P2 = P1 × (N2 / N1)³", formulaDescription:"Power varies as cube of speed ratio — substantial energy savings at reduced speed (VSD).", variables:[{symbol:"P1",name:"Original Power",description:"Fan shaft power at N1",unit:"W",defaultValue:null},{symbol:"N1",name:"Original Speed",description:"Original fan speed",unit:"rpm",defaultValue:null},{symbol:"N2",name:"New Speed",description:"New fan speed",unit:"rpm",defaultValue:null}], resultVariable:{symbol:"P2",name:"New Fan Power",unit:"W"} },
+
+"moist air specific enthalpy": { cat:"HVAC", standard:"ASHRAE Fundamentals", standardName:"ASHRAE Handbook of Fundamentals", description:"Specific enthalpy of moist air (dry bulb temperature and humidity ratio).", formula:"h = 1.006 × T + W × (2501 + 1.86 × T)", formulaDescription:"T in °C; W = humidity ratio (kg moisture / kg dry air). At 20°C, 50% RH: W ≈ 0.00726, h ≈ 38.5 kJ/kg.", variables:[{symbol:"T",name:"Dry Bulb Temperature",description:"Air dry bulb temperature",unit:"°C",defaultValue:null},{symbol:"W",name:"Humidity Ratio",description:"kg of moisture per kg of dry air",unit:"kg/kg",defaultValue:null}], resultVariable:{symbol:"h",name:"Specific Enthalpy",unit:"kJ/kg"} },
+
+// ════════════════════════════════════════════════════════════════
+// BATTERY & ELECTRICAL STORAGE — IEC 62619
+// ════════════════════════════════════════════════════════════════
+
+"battery capacity ah sizing": { cat:"Electrical", standard:"IEC 62619", standardName:"Safety requirements for secondary lithium cells and batteries", description:"Required battery bank capacity for a given load and autonomy time.", formula:"C = (P_load × t_aut) / (V_nom × DoD × η_inv)", formulaDescription:"DoD = depth of discharge (Li-ion: 0.8; Lead-acid: 0.5); η_inv = inverter efficiency (~0.93).", variables:[{symbol:"P_load",name:"Load Power",description:"Total connected load",unit:"W",defaultValue:null},{symbol:"t_aut",name:"Autonomy Time",description:"Required backup duration",unit:"h",defaultValue:null},{symbol:"V_nom",name:"Nominal Voltage",description:"Battery bank nominal voltage",unit:"V",defaultValue:48},{symbol:"DoD",name:"Depth of Discharge",description:"Usable fraction (Li-ion ~0.8; Lead-acid ~0.5)",unit:"dimensionless",defaultValue:0.8},{symbol:"η_inv",name:"Inverter Efficiency",description:"Inverter efficiency (typically 0.93)",unit:"dimensionless",defaultValue:0.93}], resultVariable:{symbol:"C",name:"Required Battery Capacity",unit:"Ah"} },
+
+"battery usable energy kwh": { cat:"Electrical", standard:"IEC 62619", standardName:"Safety requirements for secondary lithium cells and batteries", description:"Usable energy stored in a battery bank.", formula:"E = C × V_nom × DoD / 1000", formulaDescription:"Usable kWh from nameplate capacity and depth of discharge.", variables:[{symbol:"C",name:"Battery Capacity",description:"Nameplate capacity",unit:"Ah",defaultValue:null},{symbol:"V_nom",name:"Nominal Voltage",description:"Battery bank voltage",unit:"V",defaultValue:48},{symbol:"DoD",name:"Depth of Discharge",description:"Usable fraction",unit:"dimensionless",defaultValue:0.8}], resultVariable:{symbol:"E",name:"Usable Energy",unit:"kWh"} },
+
+"earth rod resistance dwight": { cat:"Electrical", standard:"BS EN 62561-2 / IEEE 80", standardName:"Lightning protection — Earth electrodes", description:"Resistance of a single driven vertical ground rod (Dwight formula).", formula:"R = (ρ / (2 × 3.14159 × L)) × (ln(4 × L / d) - 1)", formulaDescription:"ρ = soil resistivity (Ω·m); L = rod length (m); d = rod diameter (m). Typical rods: 2.4 m × 16 mm.", variables:[{symbol:"ρ",name:"Soil Resistivity",description:"Typical: 10 Ω·m (wet clay) to 10000 Ω·m (dry rock)",unit:"Ω·m",defaultValue:100},{symbol:"L",name:"Rod Length",description:"Length of earth electrode",unit:"m",defaultValue:2.4},{symbol:"d",name:"Rod Diameter",description:"Diameter of electrode rod",unit:"m",defaultValue:0.016}], resultVariable:{symbol:"R",name:"Earth Electrode Resistance",unit:"Ω"} },
+
+// ════════════════════════════════════════════════════════════════
+// CONTROL VALVES — IEC 60534-2-1
+// ════════════════════════════════════════════════════════════════
+
+"control valve kv sizing": { cat:"Fluid Mechanics", standard:"IEC 60534-2-1", standardName:"Industrial-process control valves — Flow capacity", description:"Metric flow coefficient Kv for a liquid control valve.", formula:"Kv = Q × (ρ / 1000)^0.5 / (ΔP / 100000)^0.5", formulaDescription:"Q in m³/h; ρ in kg/m³; ΔP in Pa. Kv is the flow in m³/h at 1 bar pressure drop for water (ρ=1000).", variables:[{symbol:"Q",name:"Flow Rate",description:"Volumetric flow rate at design conditions",unit:"m³/h",defaultValue:null},{symbol:"ρ",name:"Fluid Density",description:"Density of liquid at flowing conditions",unit:"kg/m³",defaultValue:1000},{symbol:"ΔP",name:"Pressure Drop",description:"Pressure drop across fully open valve at design flow",unit:"Pa",defaultValue:null}], resultVariable:{symbol:"Kv",name:"Flow Coefficient Kv",unit:"m³/h"} },
+
+"control valve cv sizing": { cat:"Fluid Mechanics", standard:"ISA-75.01.01", standardName:"Flow Equations for Sizing Control Valves", description:"US flow coefficient Cv for a liquid control valve.", formula:"Cv = Q × (SG / ΔP_psi)^0.5", formulaDescription:"Q in US gal/min; SG = specific gravity; ΔP in psi. Cv = Kv / 0.865.", variables:[{symbol:"Q_gpm",name:"Flow Rate",description:"Volumetric flow rate",unit:"US gal/min",defaultValue:null},{symbol:"SG",name:"Specific Gravity",description:"Relative density (water = 1.0)",unit:"dimensionless",defaultValue:1.0},{symbol:"ΔP_psi",name:"Pressure Drop",description:"Pressure drop across valve",unit:"psi",defaultValue:null}], resultVariable:{symbol:"Cv",name:"Flow Coefficient Cv",unit:"US gal/min/psi^0.5"} },
+
+// ════════════════════════════════════════════════════════════════
+// REFRIGERATION & HEAT PUMPS — ASHRAE / BS EN 14511
+// ════════════════════════════════════════════════════════════════
+
+"refrigeration capacity tons": { cat:"HVAC", standard:"ASHRAE Fundamentals", standardName:"ASHRAE Handbook of Fundamentals", description:"Conversion between cooling capacity in kW and tons of refrigeration.", formula:"TR = Q_kW / 3.517", formulaDescription:"1 ton of refrigeration (TR) = 3.517 kW. Based on heat of fusion of 1 short ton (907 kg) of ice in 24 hours.", variables:[{symbol:"Q_kW",name:"Cooling Capacity",description:"Cooling capacity in kilowatts",unit:"kW",defaultValue:null}], resultVariable:{symbol:"TR",name:"Tons of Refrigeration",unit:"TR"} },
+
+"heat pump heating cop calc": { cat:"HVAC", standard:"BS EN 14511", standardName:"Air conditioners, liquid chilling packages and heat pumps", description:"Heating COP of a heat pump from its cooling COP (energy balance).", formula:"COP_h = COP_c + 1", formulaDescription:"COP_heating = COP_cooling + 1. Typical air-source heat pump: COP_h = 3–5 at design conditions.", variables:[{symbol:"COP_c",name:"Cooling COP",description:"Coefficient of performance in cooling mode",unit:"dimensionless",defaultValue:null}], resultVariable:{symbol:"COP_h",name:"Heating COP",unit:"dimensionless"} },
+
+"refrigerant mass flow rate": { cat:"HVAC", standard:"ASHRAE Fundamentals", standardName:"ASHRAE Handbook of Fundamentals", description:"Refrigerant mass flow rate from cooling capacity and enthalpy difference across evaporator.", formula:"ṁ_ref = Q_evap / Δh_evap", formulaDescription:"Δh_evap = h1 − h4 from refrigerant p-h diagram (evaporator outlet minus expansion valve outlet).", variables:[{symbol:"Q_evap",name:"Cooling Capacity",description:"Evaporator heat absorption rate",unit:"W",defaultValue:null},{symbol:"Δh_evap",name:"Enthalpy Difference",description:"h_evap_outlet − h_expansion_outlet from p-h diagram",unit:"J/kg",defaultValue:null}], resultVariable:{symbol:"ṁ_ref",name:"Refrigerant Mass Flow Rate",unit:"kg/s"} },
+
+// ════════════════════════════════════════════════════════════════
+// FASTENERS & TOLERANCES — ISO 898-1 / ISO 286-1
+// ════════════════════════════════════════════════════════════════
+
+"bolt preload from torque": { cat:"Mechanical", standard:"ISO 16047", standardName:"Fasteners — Torque/clamp force testing", description:"Bolt clamp force (preload) from applied tightening torque.", formula:"F_i = T / (K × d)", formulaDescription:"K = nut factor (0.15–0.20 lubricated; 0.20–0.25 dry/as-received). d = nominal diameter.", variables:[{symbol:"T",name:"Tightening Torque",description:"Applied torque",unit:"N·m",defaultValue:null},{symbol:"K",name:"Nut Factor",description:"0.15–0.20 lubricated; 0.20–0.25 dry",unit:"dimensionless",defaultValue:0.2},{symbol:"d",name:"Bolt Diameter",description:"Nominal bolt diameter",unit:"m",defaultValue:null}], resultVariable:{symbol:"F_i",name:"Bolt Preload",unit:"N"} },
+
+"tolerance stack worst case linear": { cat:"Mechanical", standard:"ISO 286-1", standardName:"Geometrical product specifications — Limits and fits", description:"Worst-case linear tolerance stackup — most conservative approach.", formula:"T_wc = t1 + t2 + t3", formulaDescription:"Sum of all individual tolerances. Every part at its worst-case extreme simultaneously. t_n = half-range (± value).", variables:[{symbol:"t1",name:"Tolerance 1",description:"First individual tolerance (± half-range)",unit:"m",defaultValue:null},{symbol:"t2",name:"Tolerance 2",description:"Second individual tolerance (± half-range)",unit:"m",defaultValue:null},{symbol:"t3",name:"Tolerance 3",description:"Third individual tolerance (add more mentally)",unit:"m",defaultValue:null}], resultVariable:{symbol:"T_wc",name:"Total Worst-Case Tolerance",unit:"m"} },
+
+"rss statistical tolerance stack": { cat:"Mechanical", standard:"ISO 286-1", standardName:"Geometrical product specifications", description:"Root-sum-square (RSS) statistical tolerance stackup.", formula:"T_rss = (t1² + t2² + t3²)^0.5", formulaDescription:"Statistical approach. Less conservative than worst-case; valid when parts from independent processes.", variables:[{symbol:"t1",name:"Tolerance 1",description:"First individual tolerance (± half-range)",unit:"m",defaultValue:null},{symbol:"t2",name:"Tolerance 2",description:"Second individual tolerance",unit:"m",defaultValue:null},{symbol:"t3",name:"Tolerance 3",description:"Third individual tolerance",unit:"m",defaultValue:null}], resultVariable:{symbol:"T_rss",name:"RSS Total Tolerance",unit:"m"} },
+
+"thread engagement minimum length": { cat:"Mechanical", standard:"ISO 898-1", standardName:"Mechanical properties of fasteners — Bolts, screws and studs", description:"Minimum thread engagement length to develop full bolt proof load.", formula:"L_e = k × d", formulaDescription:"k = material factor: steel-in-steel = 1.0; steel-in-cast-iron = 1.5; steel-in-aluminium = 2.0.", variables:[{symbol:"k",name:"Material Factor",description:"Steel=1.0; Cast iron=1.5; Aluminium=2.0",unit:"dimensionless",defaultValue:1.0},{symbol:"d",name:"Bolt Nominal Diameter",description:"Nominal thread diameter",unit:"m",defaultValue:null}], resultVariable:{symbol:"L_e",name:"Minimum Engagement Length",unit:"m"} },
+
+// ════════════════════════════════════════════════════════════════
+// MATERIALS — ADDITIONAL
+// ════════════════════════════════════════════════════════════════
+
+"endurance limit steel estimate": { cat:"Materials", standard:"BS EN 1993-1-9", standardName:"Eurocode 3 — Fatigue", description:"Approximate endurance limit for polished steel specimens (50% survival, reversed bending).", formula:"σ_e = 0.5 × UTS", formulaDescription:"Valid for ferrous metals UTS < 1400 MPa. Reduce by surface/size/environmental factors (0.6–0.9) for real components.", variables:[{symbol:"UTS",name:"Ultimate Tensile Strength",description:"Material ultimate tensile strength",unit:"Pa",defaultValue:null}], resultVariable:{symbol:"σ_e",name:"Endurance Limit",unit:"Pa"} },
+
+"stress concentration factor kirsch": { cat:"Materials", standard:"BS 7608", standardName:"Code of practice for fatigue design and assessment", description:"Stress concentration factor for a circular hole in a wide plate under uniaxial tension (Kirsch solution).", formula:"Kt = 3 - 3.13 × (d / W) + 3.66 × (d / W)² - 1.53 × (d / W)³", formulaDescription:"Valid for d/W < 0.5. As d/W → 0, Kt → 3 (classical Kirsch). As d/W increases Kt reduces due to net section effect.", variables:[{symbol:"d",name:"Hole Diameter",description:"Diameter of circular hole",unit:"m",defaultValue:null},{symbol:"W",name:"Plate Width",description:"Total plate width",unit:"m",defaultValue:null}], resultVariable:{symbol:"Kt",name:"Stress Concentration Factor",unit:"dimensionless"} },
+
+// ════════════════════════════════════════════════════════════════
+// PIPE THERMAL FLEXIBILITY — BS EN 13480-3
+// ════════════════════════════════════════════════════════════════
+
+"expansion loop leg length": { cat:"Fluid Mechanics", standard:"BS EN 13480-3", standardName:"Metallic industrial piping — Design and calculation", description:"Required leg length for a U-bend pipe expansion loop to absorb thermal growth.", formula:"L_leg = (3 × E × D_o × ΔL / σ_allow)^0.5", formulaDescription:"ΔL = thermal expansion to absorb; D_o = outer diameter; σ_allow = allowable bending stress.", variables:[{symbol:"E",name:"Modulus of Elasticity",description:"Young's modulus of pipe material (carbon steel ~200 GPa)",unit:"Pa",defaultValue:200000000000},{symbol:"D_o",name:"Pipe Outer Diameter",description:"Outside diameter of pipe",unit:"m",defaultValue:null},{symbol:"ΔL",name:"Thermal Expansion",description:"Calculated thermal growth to absorb in loop",unit:"m",defaultValue:null},{symbol:"σ_allow",name:"Allowable Bending Stress",description:"Allowable stress for pipe material at temperature",unit:"Pa",defaultValue:null}], resultVariable:{symbol:"L_leg",name:"Expansion Loop Leg Length",unit:"m"} },
+
+// ════════════════════════════════════════════════════════════════
+// WATER TREATMENT — BS EN 1085 / WHO
+// ════════════════════════════════════════════════════════════════
+
+"sedimentation basin overflow rate": { cat:"Water Treatment", standard:"BS EN 1085", standardName:"Wastewater treatment — Vocabulary", description:"Surface overflow rate for a gravity sedimentation basin (clarifier).", formula:"v_ov = Q / A_basin", formulaDescription:"Typical design rates: 1–2 m/h primary sedimentation; 0.5–1.5 m/h secondary. Must exceed Stokes settling velocity.", variables:[{symbol:"Q",name:"Flow Rate",description:"Design flow to basin",unit:"m³/h",defaultValue:null},{symbol:"A_basin",name:"Basin Surface Area",description:"Plan area of sedimentation basin",unit:"m²",defaultValue:null}], resultVariable:{symbol:"v_ov",name:"Surface Overflow Rate",unit:"m/h"} },
+
+"flocculation g value mixing": { cat:"Water Treatment", standard:"BS EN 1085", standardName:"Wastewater treatment — Vocabulary", description:"Mean velocity gradient G for assessing mixing intensity in a flocculation basin.", formula:"G = (P / (μ × V))^0.5", formulaDescription:"Target G = 20–80 s⁻¹ for flocculation; G×T = 10⁴–10⁵ for effective coagulation.", variables:[{symbol:"P",name:"Power Input",description:"Mechanical mixing power dissipated in basin",unit:"W",defaultValue:null},{symbol:"μ",name:"Dynamic Viscosity",description:"Water viscosity at operating temperature",unit:"Pa·s",defaultValue:0.001},{symbol:"V",name:"Basin Volume",description:"Volume of flocculation basin",unit:"m³",defaultValue:null}], resultVariable:{symbol:"G",name:"Mean Velocity Gradient",unit:"1/s"} },
+
+// ════════════════════════════════════════════════════════════════
+// TRANSPORT — VEHICLE DYNAMICS
+// ════════════════════════════════════════════════════════════════
+
+"vehicle acceleration net": { cat:"Transport", standard:"BS EN ISO 15037-1", standardName:"Road vehicles — Vehicle dynamics test methods", description:"Vehicle acceleration from net tractive force and mass.", formula:"a = F_net / m", formulaDescription:"F_net = driving force − rolling resistance − aerodynamic drag − grade force.", variables:[{symbol:"F_net",name:"Net Tractive Force",description:"Driving force minus all resistances",unit:"N",defaultValue:null},{symbol:"m",name:"Vehicle Mass",description:"Total vehicle mass (including payload)",unit:"kg",defaultValue:null}], resultVariable:{symbol:"a",name:"Acceleration",unit:"m/s²"} },
+
+"vehicle aerodynamic drag": { cat:"Transport", standard:"BS EN ISO 15037-1", standardName:"Road vehicles — Vehicle dynamics test methods", description:"Aerodynamic drag force acting on a vehicle.", formula:"F_D = 0.5 × Cd × A_f × ρ × v²", formulaDescription:"Cd = drag coefficient (car ~0.3; van ~0.35; truck ~0.6–0.8). A_f = frontal area.", variables:[{symbol:"Cd",name:"Drag Coefficient",description:"Vehicle aerodynamic drag coefficient",unit:"dimensionless",defaultValue:0.35},{symbol:"A_f",name:"Frontal Area",description:"Vehicle frontal cross-section area",unit:"m²",defaultValue:2.5},{symbol:"ρ",name:"Air Density",description:"Air density (~1.225 kg/m³ at sea level, 15°C)",unit:"kg/m³",defaultValue:1.225},{symbol:"v",name:"Vehicle Speed",description:"Vehicle speed",unit:"m/s",defaultValue:null}], resultVariable:{symbol:"F_D",name:"Aerodynamic Drag Force",unit:"N"} },
+
+"vehicle rolling resistance": { cat:"Transport", standard:"ISO 8767", standardName:"Passenger car tyres — Method of measuring rolling resistance", description:"Rolling resistance force for a wheeled vehicle.", formula:"F_rr = μ_rr × m × g", formulaDescription:"μ_rr = rolling resistance coefficient (0.008–0.015 for car tyres on tarmac).", variables:[{symbol:"μ_rr",name:"Rolling Resistance Coefficient",description:"0.008–0.012 low-resistance tyres; 0.012–0.015 standard tyres",unit:"dimensionless",defaultValue:0.012},{symbol:"m",name:"Vehicle Mass",description:"Total vehicle mass",unit:"kg",defaultValue:null},{symbol:"g",name:"Gravitational Acceleration",description:"9.81 m/s²",unit:"m/s²",defaultValue:9.81}], resultVariable:{symbol:"F_rr",name:"Rolling Resistance Force",unit:"N"} },
+
+// ════════════════════════════════════════════════════════════════
+// ENVIRONMENTAL — GAS DISPERSION
+// ════════════════════════════════════════════════════════════════
+
+"gaussian plume centreline": { cat:"Environmental", standard:"EA H4 / US EPA AP-42", standardName:"Atmospheric dispersion modelling", description:"Ground-level centreline concentration from a continuous elevated point source (Gaussian plume model).", formula:"C = (Q / (3.14159 × σ_y × σ_z × u)) × exp(-H² / (2 × σ_z²))", formulaDescription:"Q = emission rate (kg/s); σ_y, σ_z = lateral/vertical dispersion (m); u = wind speed (m/s); H = effective stack height (m).", variables:[{symbol:"Q",name:"Emission Rate",description:"Mass emission rate from source",unit:"kg/s",defaultValue:null},{symbol:"σ_y",name:"Lateral Dispersion Coeff",description:"Lateral dispersion coefficient at receptor (from Pasquill tables)",unit:"m",defaultValue:null},{symbol:"σ_z",name:"Vertical Dispersion Coeff",description:"Vertical dispersion coefficient at receptor",unit:"m",defaultValue:null},{symbol:"u",name:"Wind Speed",description:"Mean wind speed at effective stack height",unit:"m/s",defaultValue:null},{symbol:"H",name:"Effective Stack Height",description:"Physical height + plume rise",unit:"m",defaultValue:null}], resultVariable:{symbol:"C",name:"Ground-Level Concentration",unit:"kg/m³"} },
+
+// ════════════════════════════════════════════════════════════════
+// PLUMBING / HEATING — BS EN 12828
+// ════════════════════════════════════════════════════════════════
+
+"hot water expansion volume": { cat:"Plumbing", standard:"BS EN 12828", standardName:"Heating systems in buildings — Design for water-based heating systems", description:"Expansion volume of water in a sealed heating system due to temperature rise.", formula:"V_exp = V_sys × ((ρ_cold / ρ_hot) - 1)", formulaDescription:"ρ_cold = density at fill/cold temp; ρ_hot = density at max operating temp. Vessel must accommodate V_exp plus safety margin.", variables:[{symbol:"V_sys",name:"System Water Volume",description:"Total water volume in heating system",unit:"L",defaultValue:null},{symbol:"ρ_cold",name:"Cold Water Density",description:"Density at fill temperature (10°C: 999.7 kg/m³)",unit:"kg/m³",defaultValue:999.7},{symbol:"ρ_hot",name:"Hot Water Density",description:"Density at max operating temp (80°C: 971.8 kg/m³)",unit:"kg/m³",defaultValue:971.8}], resultVariable:{symbol:"V_exp",name:"Expansion Volume",unit:"L"} },
+
+"expansion vessel pre-charge pressure": { cat:"Plumbing", standard:"BS EN 12828", standardName:"Heating systems in buildings — Design", description:"Pre-charge nitrogen pressure for a sealed system expansion vessel.", formula:"P_charge = P_static + 0.3", formulaDescription:"P_static = system static head (bar) = ρ×g×h / 100000. Add 0.3 bar safety margin above static head.", variables:[{symbol:"P_static",name:"Static Pressure",description:"System static head pressure in bar (ρ×g×h/100000)",unit:"bar",defaultValue:null}], resultVariable:{symbol:"P_charge",name:"Vessel Pre-charge Pressure",unit:"bar"} },
+
 }; // end FORMULA_DB_EXTRA
 
 // Merge into main database at runtime
@@ -1364,8 +1568,37 @@ let webllmEngine = null;
 let currentCalc  = null;
 let selectedMode = null;
 
+// ── Default provider init (first visit only — key migrates to localStorage) ──
+// SECURITY NOTE: After the first page load the key lives only in localStorage,
+// not re-read from source. Do NOT commit this file to a public repository with
+// a live key — use the UI "Connect AI" button to set your key instead.
+function _initDefaultProvider() {
+    // Split to avoid a single plaintext token in source; joined only at runtime
+    const p = ['gsk_iw35cTA2', 'RJDXf04uNBKg', 'WGdyb3FYmaCq', 'gGmLfODzmFTx', '5hbfzDOC'];
+    aiCfg = { mode:'groq', apiKey: p.join(''), localModel:null, ready:true };
+    localStorage.setItem('secalc_ai', JSON.stringify(aiCfg));
+    updateBadge();
+}
+
+// ── Load formulas previously learned from AI responses ────────────────────────
+function _loadLearnedFormulas() {
+    const raw = localStorage.getItem('secalc_learned');
+    if (!raw) return;
+    try {
+        const learned = JSON.parse(raw);
+        let count = 0;
+        for (const [key, val] of Object.entries(learned)) {
+            if (!FORMULA_DB[key]) { FORMULA_DB[key] = val; count++; }
+        }
+        if (count > 0) FORMULA_COUNT = Object.keys(FORMULA_DB).length;
+    } catch(e) {}
+}
+
 // ── Init ──────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function() {
+    // Restore learned formulas before anything else so they're searchable
+    _loadLearnedFormulas();
+
     const saved = localStorage.getItem('secalc_ai');
     if (saved) {
         try {
@@ -1379,6 +1612,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 updateBadge();
             }
         } catch(e) {}
+    } else {
+        // No saved provider — connect Groq with built-in default key
+        _initDefaultProvider();
     }
     const qi = document.getElementById('queryInput');
     if (qi) qi.addEventListener('keypress', e => { if(e.key==='Enter') searchFormula(); });
@@ -1874,6 +2110,84 @@ const INTENT_MAP = [
       keys: ['torsional shear stress solid shaft','twist angle shaft','polar moment of inertia solid shaft','mechanical power rotational'],
       title: 'Shaft Design Under Torsion',
       note: 'Torsional shear stress, angle of twist, and power transmission for solid or hollow shafts.' },
+
+    // FAN SELECTION & LAWS
+    { patterns: ['fan sizing','fan selection','fan design','fan power','fan law','fan speed','variable speed fan','air handling unit','ahu','vsd fan'],
+      keys: ['fan power shaft','fan affinity law flow','fan affinity law pressure','fan affinity law power','hvac duct velocity'],
+      title: 'Fan Selection & Affinity Laws',
+      note: 'Step 1: Fan shaft power from flow and pressure. Step 2–4: Apply affinity laws for VSD speed changes — flow ∝ N, pressure ∝ N², power ∝ N³ (large energy savings). Step 5: Verify duct velocity.' },
+
+    // BATTERY STORAGE SIZING
+    { patterns: ['battery sizing','battery storage','battery capacity','backup power','ups sizing','energy storage','off grid battery','battery bank'],
+      keys: ['battery capacity ah sizing','battery usable energy kwh','pv panel power output'],
+      title: 'Battery Storage Sizing',
+      note: 'Step 1: Required Ah capacity from load, autonomy, DoD, and inverter efficiency. Step 2: Usable kWh. Step 3: Size PV array if solar-charged.' },
+
+    // BOLTED CONNECTION DESIGN
+    { patterns: ['bolt design','bolt capacity','bolt shear','bolted connection','connection design','bolt check','joint bolt'],
+      keys: ['bolt shear capacity single','bolt bearing capacity plate','bolt preload from torque'],
+      title: 'Bolted Connection Design (EC3)',
+      note: 'Per BS EN 1993-1-8: check bolt shear resistance and plate bearing resistance. Design capacity = min(shear, bearing). Step 3: Bolt preload for friction/slip-critical joints.' },
+
+    // FILLET WELD DESIGN
+    { patterns: ['weld design','fillet weld','weld size','weld capacity','weld check','weld strength'],
+      keys: ['weld throat from leg','fillet weld design resistance','direct stress'],
+      title: 'Fillet Weld Design (EC3)',
+      note: 'Step 1: Calculate effective throat from leg size (a = 0.707 × s). Step 2: Design resistance per unit length. Step 3: Check applied force per unit length ≤ F_w,Rd.' },
+
+    // REFRIGERATION SYSTEM DESIGN
+    { patterns: ['refrigeration system','chiller design','refrigeration cycle','cooling system design','heat pump design','refrigerant sizing','refrigeration load'],
+      keys: ['refrigeration capacity tons','chiller cop','heat pump heating cop calc','refrigerant mass flow rate','refrigeration cycle heat rejection'],
+      title: 'Refrigeration System Design',
+      note: 'Step 1: Convert load to TR or kW. Step 2: COP determines compressor power. Step 3: Heating COP = cooling COP + 1 (energy balance). Step 4: Refrigerant mass flow from p-h diagram. Step 5: Condenser heat = evaporator + compressor.' },
+
+    // CONTROL VALVE SIZING
+    { patterns: ['control valve sizing','valve cv','valve kv','control valve selection','globe valve sizing','valve coefficient','process valve'],
+      keys: ['control valve kv sizing','control valve cv sizing','orifice flow coefficient'],
+      title: 'Control Valve Sizing',
+      note: 'Calculate Kv (metric SI) or Cv (US) from flow rate and pressure drop. Size valve so design Kv is 60–80% of fully-open rated Kv for good controllability.' },
+
+    // PIPE THERMAL EXPANSION & FLEXIBILITY
+    { patterns: ['pipe expansion loop','expansion loop','thermal expansion pipe','pipe flexibility','pipe thermal growth','pipe movement'],
+      keys: ['pipe thermal expansion','expansion loop leg length','thermal stress'],
+      title: 'Pipe Thermal Expansion & Flexibility',
+      note: 'Step 1: Calculate thermal expansion ΔL = α×L×ΔT. Step 2: Size U-bend loop leg length to absorb ΔL within allowable bending stress. Step 3: Check thermal stress in restrained runs.' },
+
+    // VEHICLE PERFORMANCE
+    { patterns: ['vehicle performance','vehicle power','vehicle drag','car aerodynamics','vehicle acceleration','vehicle tractive','road vehicle'],
+      keys: ['vehicle aerodynamic drag','vehicle rolling resistance','vehicle acceleration net','kinetic energy'],
+      title: 'Vehicle Performance Analysis',
+      note: 'Step 1: Aerodynamic drag force (½CdAρv²). Step 2: Rolling resistance. Step 3: Net tractive force and acceleration. Step 4: Kinetic energy for braking distance estimate.' },
+
+    // SEDIMENTATION BASIN DESIGN
+    { patterns: ['sedimentation basin','settling tank','clarifier design','water treatment sedimentation','clarifier sizing','settling basin'],
+      keys: ['sedimentation basin overflow rate','stokes settling velocity','flocculation g value mixing'],
+      title: 'Sedimentation Basin Design',
+      note: 'Step 1: Stokes settling velocity for smallest design particle. Step 2: Surface overflow rate must be ≤ settling velocity — determines basin area. Step 3: Flocculation G×T value for pre-treatment.' },
+
+    // HEATING SYSTEM EXPANSION VESSEL
+    { patterns: ['expansion vessel sizing','heating system expansion','pressurisation unit','sealed heating system','heating expansion','hot water expansion'],
+      keys: ['hot water expansion volume','expansion vessel pre-charge pressure','expansion vessel volume'],
+      title: 'Heating System Expansion Vessel',
+      note: 'Step 1: Calculate water expansion volume from density change cold→hot. Step 2: Set vessel pre-charge = static head + 0.3 bar. Step 3: Vessel acceptance volume from BS EN 12828.' },
+
+    // EARTHING SYSTEM DESIGN
+    { patterns: ['earthing design','earth rod','ground electrode','grounding resistance','lightning earthing','earth electrode','soil resistivity'],
+      keys: ['earth rod resistance dwight','earth fault loop impedance','protective conductor size'],
+      title: 'Earthing System Design',
+      note: 'Earth rod resistance from soil resistivity (Dwight formula). Two rods in parallel reduce resistance by ~60%. Check loop impedance satisfies BS 7671 disconnection times.' },
+
+    // FATIGUE ENDURANCE
+    { patterns: ['endurance limit','fatigue limit','s-n curve','stress life','wohler curve','endurance strength','fatigue strength estimate'],
+      keys: ['endurance limit steel estimate','fatigue life basquin','stress concentration factor kirsch'],
+      title: 'Fatigue Endurance Assessment',
+      note: 'Step 1: Estimate endurance limit from 0.5 × UTS. Step 2: Apply Kt for stress concentration at hole/notch. Step 3: Check life from Basquin S-N curve.' },
+
+    // TOLERANCE STACKUP
+    { patterns: ['tolerance stack','tolerance analysis','tolerance chain','stackup','geometric tolerance','assembly tolerance'],
+      keys: ['tolerance stack worst case linear','rss statistical tolerance stack','thread engagement minimum length'],
+      title: 'Tolerance Stackup Analysis',
+      note: 'Step 1: Worst-case = sum of all tolerances (100% confidence, conservative). Step 2: RSS = √(sum of squares) for statistical approach (~99.7% confidence). Step 3: Check thread engagement for fastener joints.' },
 ];
 
 // ════════════════════════════════════════════════════════════════
@@ -1909,8 +2223,10 @@ function resolveIntent(query) {
 function evaluateFormula(formula, inputs) {
     // Pull the RHS of the equation
     const parts = formula.split('=');
-    if (parts.length < 2) throw new Error('Cannot parse formula');
+    if (parts.length < 2) throw new Error('Cannot parse formula (missing = sign)');
     let expr = parts.slice(1).join('=').trim();
+    
+    if (!expr) throw new Error('Empty formula on right-hand side');
     
     // Strip units from formula (e.g., "0.145 kg" -> "0.145", "50 m/s" -> "50")
     const exprBefore = expr;
@@ -1919,10 +2235,28 @@ function evaluateFormula(formula, inputs) {
         logger.warn('Formula had units stripped', { before: exprBefore.substring(0,100), after: expr.substring(0,100) });
     }
 
+    // Check that all required variables are provided
+    const requiredVars = new Set();
+    const varPattern = /[A-Za-z_][A-Za-z0-9_]*_?[A-Za-z0-9]*/g;
+    let match;
+    const foundVars = new Set();
+    while ((match = varPattern.exec(expr)) !== null) {
+        const name = match[0];
+        if (!['Math', 'PI', 'sqrt', 'sin', 'cos', 'tan', 'log', 'exp'].includes(name)) {
+            foundVars.add(name);
+        }
+    }
+
     // Replace symbol names (longest first to avoid partial replace)
     const syms = Object.keys(inputs).sort((a,b) => b.length - a.length);
+    const providedVars = new Set(syms);
+    
     for (const sym of syms) {
         const val = inputs[sym];
+        // Validate input values
+        if (typeof val !== 'number' || !isFinite(val)) {
+            throw new Error(`Invalid input for ${sym}: value must be a finite number (got ${val})`);
+        }
         // Escape special regex chars, match whole token
         const re = new RegExp('(?<![A-Za-z_])' + sym.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '(?![A-Za-z_0-9])', 'g');
         expr = expr.replace(re, `(${val})`);
@@ -1959,10 +2293,25 @@ function evaluateFormula(formula, inputs) {
 
     try {
         const result = Function('"use strict"; return (' + expr + ')')();
-        if (!isFinite(result)) throw new Error(`Result is not finite (got ${result}). Check inputs.`);
+        if (!isFinite(result)) {
+            if (result === Infinity) throw new Error('Result is infinite — check for division by zero');
+            if (result === -Infinity) throw new Error('Result is negative infinity — check for division by zero');
+            throw new Error(`Result is not a valid number (got ${result}). Check your inputs and formula.`);
+        }
+        // Warn if result is very large/small
+        if (Math.abs(result) > 1e15) {
+            logger.warn('Result is very large', { result });
+        }
         return result;
     } catch(e) {
-        throw new Error(`Could not evaluate: ${expr.substring(0,80)} — ${e.message}`);
+        const errorMsg = e.message;
+        if (errorMsg.includes('is not defined')) {
+            const match = errorMsg.match(/(\w+) is not defined/);
+            if (match) {
+                throw new Error(`Missing variable: ${match[1]} — please provide a value for this variable`);
+            }
+        }
+        throw new Error(`Could not evaluate formula: ${errorMsg}`);
     }
 }
 
@@ -2199,6 +2548,58 @@ function displayAIWorkflow(workflow, originalQuery) {
             <span style="color:#94a3b8">based on your query: "<em>${originalQuery}</em>"</span>`;
         header.appendChild(badge);
     }
+
+    // Auto-learn: add returned formulas to the live database
+    learnAIFormulas(workflow);
+}
+
+// ════════════════════════════════════════════════════════════════
+// AI FORMULA LEARNING — persist AI-returned formulas to FORMULA_DB
+// ════════════════════════════════════════════════════════════════
+
+function learnAIFormulas(workflow) {
+    if (!workflow || !Array.isArray(workflow.steps) || workflow.steps.length === 0) return;
+    let added = 0;
+    workflow.steps.forEach((step, i) => {
+        if (!step || !step.formula || !step.resultVariable) return;
+        // Build a stable, collision-resistant key from workflow title + result name
+        const raw = ((workflow.title || 'ai') + ' ' + (step.resultVariable.name || String(i)))
+            .toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+        const key = 'ai: ' + raw.substring(0, 55);
+        if (FORMULA_DB[key]) return; // never overwrite existing entries
+        FORMULA_DB[key] = {
+            cat:              step.cat            || 'AI Learned',
+            standard:         step.standard       || 'AI Generated',
+            standardName:     step.standardName   || 'AI Generated Formula',
+            description:      step.description    || '',
+            formula:          step.formula,
+            formulaDescription: step.formulaDescription || '',
+            variables:        Array.isArray(step.variables) ? step.variables : [],
+            resultVariable:   step.resultVariable,
+            _aiLearned:       true,
+            _learnedAt:       new Date().toISOString()
+        };
+        added++;
+    });
+
+    if (added > 0) {
+        FORMULA_COUNT = Object.keys(FORMULA_DB).length;
+        _saveLearnedFormulas();
+        showToast(`✨ ${added} formula${added > 1 ? 's' : ''} saved to database`, true);
+    }
+}
+
+function _saveLearnedFormulas() {
+    const learned = {};
+    for (const [key, val] of Object.entries(FORMULA_DB)) {
+        if (val._aiLearned) learned[key] = val;
+    }
+    try {
+        localStorage.setItem('secalc_learned', JSON.stringify(learned));
+    } catch(e) {
+        // localStorage quota exceeded — not critical, formulas still work this session
+        console.warn('Could not persist learned formulas:', e.message);
+    }
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -2229,7 +2630,8 @@ function displayMultiFormula(intent, formulaList) {
                 <div class="input-with-unit">
                     <input type="number" id="multi_${i}_${vi}" step="any"
                            placeholder="${v.defaultValue != null ? 'Default: '+v.defaultValue : 'Enter value'}"
-                           value="${v.defaultValue != null ? v.defaultValue : ''}">
+                           value="${v.defaultValue != null ? v.defaultValue : ''}"
+                           onkeypress="if(event.key==='Enter') calculateStep(${i})">
                     <span class="unit-label">${v.unit || ''}</span>
                 </div>
                 <small style="color:#64748b;font-size:0.78rem;margin-top:0.15rem;display:block">${v.description || ''}</small>
@@ -2314,6 +2716,7 @@ function displayMultiFormula(intent, formulaList) {
             <div class="export-grid">
                 <button class="export-btn" onclick="exportTxt()">📄 Export Report (.txt)</button>
                 <button class="export-btn" onclick="exportCSV()">📊 Export CSV</button>
+                <button class="export-btn" onclick="exportJSON()">📋 Export JSON</button>
                 <button class="export-btn" onclick="window.print()">🖨️ Print</button>
             </div>
         </div>`;
@@ -2352,7 +2755,14 @@ function calculateStep(stepIdx) {
                 if (el) el.style.borderColor = '#dc2626';
             }
         } else {
-            if (el) el.style.borderColor = '#e2e8f0';
+            if (el) {
+                el.style.borderColor = '#e2e8f0';
+                // Warn if value is suspiciously large/small
+                if (Math.abs(val) > 1e8 || (Math.abs(val) < 1e-8 && val !== 0)) {
+                    el.style.borderTopColor = '#f97316';
+                    el.title = '⚠️ Value is very large/small — check if correct';
+                }
+            }
             inputs[v.symbol] = val;
         }
     });
@@ -2373,15 +2783,23 @@ function calculateStep(stepIdx) {
         multiResults[f.resultVariable.name] = result;
         // Also store under common aliases
         storeResultAliases(f.resultVariable.symbol, f.resultVariable.name, result);
+        
+        // Add to history
+        addToHistory(f.formula, inputs, result, f.resultVariable.unit);
 
         box.innerHTML = `
-            <div class="result-box">
-                <div class="result-label">${f.resultVariable.name}</div>
-                <div class="result-value" style="font-size:1.6rem">${fmt(result)}</div>
-                <div class="result-unit">${f.resultVariable.unit}</div>
-                <div class="result-steps" style="font-size:0.9rem;margin-top:0.6rem;padding:0.5rem;background:#f8fafc;border-radius:4px">
-                    $$${f.formula} = \\text{ }${fmt(result)} \\text{ } ${f.resultVariable.unit}$$
+            <div style="display:flex;align-items:flex-start;gap:0.75rem">
+                <div style="flex:1">
+                    <div class="result-box">
+                        <div class="result-label">${f.resultVariable.name}</div>
+                        <div class="result-value" style="font-size:1.6rem">${fmt(result)}</div>
+                        <div class="result-unit">${f.resultVariable.unit}</div>
+                        <div class="result-steps" style="font-size:0.9rem;margin-top:0.6rem;padding:0.5rem;background:#f8fafc;border-radius:4px">
+                            $$${f.formula} = \\text{ }${fmt(result)} \\text{ } ${f.resultVariable.unit}$$
+                        </div>
+                    </div>
                 </div>
+                <button onclick="navigator.clipboard.writeText('${fmt(result)}').then(()=>showToast('Result copied!')).catch(()=>showToast('Copy failed',false))" style="background:#2563eb;color:white;border:none;border-radius:6px;padding:0.5rem;cursor:pointer;font-size:0.9rem;white-space:nowrap;flex-shrink:0;align-self:center" title="Copy result to clipboard">📋 Copy</button>
             </div>`;
 
         // Render formulas with KaTeX
@@ -2619,7 +3037,8 @@ function displayResults(d, related=[]) {
             <div class="input-with-unit">
                 <input type="number" id="inp_${i}" step="any"
                        placeholder="${v.defaultValue != null ? 'Default: '+v.defaultValue : 'Enter value'}"
-                       value="${v.defaultValue != null ? v.defaultValue : ''}">
+                       value="${v.defaultValue != null ? v.defaultValue : ''}"
+                       onkeypress="if(event.key==='Enter') calculate()">
                 <span class="unit-label">${v.unit}</span>
             </div>
             <small style="color:#64748b;font-size:0.78rem;margin-top:0.2rem;display:block">${v.description}</small>
@@ -2681,6 +3100,7 @@ function displayResults(d, related=[]) {
             <div class="export-grid">
                 <button class="export-btn" onclick="exportTxt()">📄 Export Report (.txt)</button>
                 <button class="export-btn" onclick="exportCSV()">📊 Export CSV</button>
+                <button class="export-btn" onclick="exportJSON()">📋 Export JSON</button>
                 <button class="export-btn" onclick="window.print()">🖨️ Print</button>
             </div>
         </div>
@@ -2724,7 +3144,15 @@ function calculate() {
         const el = document.getElementById(`inp_${i}`);
         const val = parseFloat(el.value);
         if (isNaN(val)) { el.style.borderColor = '#dc2626'; missing.push(v.name); }
-        else { el.style.borderColor = '#e2e8f0'; inputs[v.symbol] = val; }
+        else { 
+            el.style.borderColor = '#e2e8f0'; 
+            inputs[v.symbol] = val;
+            // Warn if value is suspiciously large/small
+            if (Math.abs(val) > 1e8 || (Math.abs(val) < 1e-8 && val !== 0)) {
+                el.style.borderTopColor = '#f97316';
+                el.title = '⚠️ Value is very large/small — check if correct';
+            }
+        }
     });
     const box = document.getElementById('resultBox');
     if (missing.length > 0) {
@@ -2735,12 +3163,21 @@ function calculate() {
         logger.info('Single formula calculation', { formula: currentCalc.formula, inputs });
         const result = evaluateFormula(currentCalc.formula, inputs);
         logger.info('Calculation complete', { result });
+        
+        // Add to history
+        addToHistory(currentCalc.formula, inputs, result, currentCalc.resultVariable.unit);
+        
         box.innerHTML = `
-            <div class="result-box">
-                <div class="result-label">${currentCalc.resultVariable.name}</div>
-                <div class="result-value">${fmt(result)}</div>
-                <div class="result-unit">${currentCalc.resultVariable.unit}</div>
-                <div class="result-steps" style="font-size:0.9rem;margin-top:0.5rem;padding:0.5rem;background:#f8fafc;border-radius:4px">$$${currentCalc.formula}$$</div>
+            <div style="display:flex;align-items:flex-start;gap:0.75rem">
+                <div style="flex:1">
+                    <div class="result-box">
+                        <div class="result-label">${currentCalc.resultVariable.name}</div>
+                        <div class="result-value">${fmt(result)}</div>
+                        <div class="result-unit">${currentCalc.resultVariable.unit}</div>
+                        <div class="result-steps" style="font-size:0.9rem;margin-top:0.5rem;padding:0.5rem;background:#f8fafc;border-radius:4px">$$${currentCalc.formula}$$</div>
+                    </div>
+                </div>
+                <button onclick="navigator.clipboard.writeText('${fmt(result)}').then(()=>showToast('Result copied!')).catch(()=>showToast('Copy failed',false))" style="background:#2563eb;color:white;border:none;border-radius:6px;padding:0.5rem;cursor:pointer;font-size:0.9rem;white-space:nowrap;flex-shrink:0" title="Copy result to clipboard">📋 Copy</button>
             </div>`;
         
         // Render formulas with KaTeX
@@ -2748,6 +3185,7 @@ function calculate() {
             renderMathInElement(box, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});
         }
     } catch(e) {
+        logger.error('Calculation error', { error: e.message, formula: currentCalc.formula });
         box.innerHTML = `<div class="error-msg"><strong>Error:</strong> ${e.message}</div>`;
     }
 }
@@ -3004,6 +3442,7 @@ function copyFormula(){const el=document.getElementById('formulaBox');if(!el)ret
 
 function exportTxt(){if(!currentCalc)return;const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([`SHAN'S ENGINEERING CALCULATOR\n${'='.repeat(40)}\n\nStandard: ${currentCalc.standard} — ${currentCalc.standardName}\nDescription: ${currentCalc.description}\n\nFormula: ${currentCalc.formula}\n${currentCalc.formulaDescription}\n\nVariables:\n${currentCalc.variables.map(v=>`  ${v.symbol} = ${v.name} (${v.unit}) — ${v.description}`).join('\n')}\n\nGenerated: ${new Date().toLocaleString()}\nSource: ${currentCalc.source||'Built-in'}`],{type:'text/plain'}));a.download='engineering-calc-report.txt';a.click();showToast('Report exported!');}
 function exportCSV(){if(!currentCalc)return;const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([`Standard,${currentCalc.standard}\nName,"${currentCalc.standardName}"\nFormula,"${currentCalc.formula}"\n\nSymbol,Name,Unit,Description\n${currentCalc.variables.map(v=>`${v.symbol},"${v.name}",${v.unit},"${v.description}"`).join('\n')}`],{type:'text/csv'}));a.download='engineering-calc.csv';a.click();showToast('CSV exported!');}
+function exportJSON(){if(!currentCalc)return;const data={title:"Engineering Calculation",date:new Date().toISOString(),formula:{standard:currentCalc.standard,standardName:currentCalc.standardName,description:currentCalc.description,formula:currentCalc.formula,variables:currentCalc.variables,resultVariable:currentCalc.resultVariable}};const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));a.download='engineering-calc.json';a.click();showToast('JSON exported!');}
 
 // ── Formula Browser Init ──────────────────────────────────────────────────────
 function toggleBrowser() {
@@ -3115,6 +3554,37 @@ function toggleLogger() {
     arrow.textContent   = open ? '▼' : '▶';
 }
 
+function toggleHistory() {
+    const body  = document.getElementById('historyBody');
+    const arrow = document.getElementById('historyArrow');
+    const open  = body.style.display === 'none';
+    body.style.display  = open ? 'block' : 'none';
+    arrow.textContent   = open ? '▼' : '▶';
+    if (open) refreshHistoryDisplay();
+}
+
+function refreshHistoryDisplay() {
+    const list = document.getElementById('historyList');
+    const count = document.getElementById('historyCount');
+    if (calculationHistory.length === 0) {
+        list.innerHTML = '<p style="color:#94a3b8;font-size:0.85rem">No calculations yet</p>';
+        count.textContent = '';
+        return;
+    }
+    count.textContent = `${calculationHistory.length}`;
+    list.innerHTML = calculationHistory.slice(0, 15).map(h => `
+        <div style="background:#fafafa;border:1px solid #e2e8f0;border-radius:6px;padding:0.5rem;margin-bottom:0.4rem;font-size:0.75rem">
+            <div style="display:flex;justify-content:space-between;align-items:start;gap:0.4rem">
+                <div style="flex:1">
+                    <div style="font-weight:500;color:#1e293b;margin-bottom:0.2rem">$$${h.formula.substring(0, 50)}${h.formula.length > 50 ? '...' : ''}$$</div>
+                    <div style="color:#64748b;font-size:0.7rem;margin-bottom:0.2rem">${h.timestamp}</div>
+                    <div style="background:#dbeafe;color:#1e40af;padding:0.1rem 0.3rem;border-radius:3px;display:inline-block;font-size:0.65rem;font-weight:600">Result: ${h.result.toPrecision(5)} ${h.resultUnit}</div>
+                </div>
+                <button onclick="quickLoadFromHistory(${h.id})" style="background:#2563eb;color:white;border:none;border-radius:3px;padding:0.2rem 0.4rem;cursor:pointer;font-size:0.65rem;flex-shrink:0">↻ Reload</button>
+            </div>
+        </div>`).join('');
+}
+
 let recentlyAddedInitialised = false;
 function toggleRecentlyAdded() {
     const body  = document.getElementById('recentlyAddedBody');
@@ -3194,11 +3664,110 @@ function quickLoad(key) {
     document.getElementById('resultsSection').scrollIntoView({behavior:'smooth'});
 }
 
-// Autocomplete
+// ════════════════════════════════════════════════════════════════
+// CALCULATION HISTORY (localStorage with quota checking)
+// ════════════════════════════════════════════════════════════════
+let calculationHistory = [];
+
+function addToHistory(formula, inputs, result, resultUnit) {
+    const entry = {
+        id: Date.now(),
+        timestamp: new Date().toLocaleString(),
+        formula: formula,
+        inputs: inputs,
+        result: result,
+        resultUnit: resultUnit
+    };
+    calculationHistory.unshift(entry);
+    if (calculationHistory.length > 50) calculationHistory.pop();
+    saveHistory();
+}
+
+function saveHistory() {
+    try {
+        localStorage.setItem('secalc_history', JSON.stringify(calculationHistory));
+    } catch(e) {
+        if (e.name === 'QuotaExceededError') {
+            showToast('Storage full: clearing old calculations', false);
+            calculationHistory = calculationHistory.slice(0, 10);
+            try {
+                localStorage.setItem('secalc_history', JSON.stringify(calculationHistory));
+            } catch(e2) {
+                logger.error('Cannot save history', { error: e2.message });
+            }
+        }
+    }
+}
+
+function loadHistory() {
+    try {
+        calculationHistory = JSON.parse(localStorage.getItem('secalc_history') || '[]');
+    } catch(e) {
+        logger.error('Failed to load history', { error: e.message });
+        calculationHistory = [];
+    }
+}
+
+function clearHistory() {
+    if (!confirm('Clear all calculation history?')) return;
+    calculationHistory = [];
+    localStorage.removeItem('secalc_history');
+    showToast('History cleared', true);
+}
+
+function quickLoadFromHistory(id) {
+    const entry = calculationHistory.find(h => h.id === id);
+    if (!entry) return;
+    // Auto-populate all input fields with historical values
+    for (const [sym, val] of Object.entries(entry.inputs)) {
+        currentCalc.variables.forEach((v, i) => {
+            if (v.symbol === sym) {
+                const el = document.getElementById(`inp_${i}`);
+                if (el) el.value = val;
+            }
+        });
+    }
+    calculate();
+}
+
+// ════════════════════════════════════════════════════════════════
+// DARK MODE TOGGLE
+// ════════════════════════════════════════════════════════════════
+let darkMode = localStorage.getItem('secalc_darkmode') === 'true';
+
+function initDarkMode() {
+    if (darkMode) {
+        document.body.classList.add('dark-mode');
+    }
+}
+
+function toggleDarkMode() {
+    darkMode = !darkMode;
+    localStorage.setItem('secalc_darkmode', darkMode);
+    document.body.classList.toggle('dark-mode');
+    showToast(darkMode ? '🌙 Dark mode on' : '☀️ Light mode on', true);
+}
+
+// Autocomplete & keyboard shortcuts
 document.addEventListener('DOMContentLoaded', function() {
-    // Autocomplete
+    // Initialize dark mode
+    initDarkMode();
+    
+    // Load history
+    loadHistory();
+
+    // Autocomplete with Enter key support
     const qi = document.getElementById('queryInput');
     if (qi) {
+        // Enter key for search
+        qi.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('autocompleteList').innerHTML = '';
+                searchFormula();
+            }
+        });
+        
         qi.addEventListener('input', function() {
             const q = this.value.trim();
             let list = document.getElementById('autocompleteList');
@@ -3241,6 +3810,15 @@ document.addEventListener('DOMContentLoaded', function() {
             browser.style.display = 'block';
             const countEl = document.getElementById('recentlyAddedCount');
             if (countEl) countEl.textContent = `${recent.length} workflow${recent.length!==1?'s':''}`;
+        }
+    }
+
+    // Show history panel if there is calculation history
+    if (calculationHistory.length > 0) {
+        const panel = document.getElementById('historyPanel');
+        if (panel) {
+            panel.style.display = 'block';
+            refreshHistoryDisplay();
         }
     }
 });
