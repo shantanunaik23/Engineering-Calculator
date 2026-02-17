@@ -1911,6 +1911,13 @@ function evaluateFormula(formula, inputs) {
     const parts = formula.split('=');
     if (parts.length < 2) throw new Error('Cannot parse formula');
     let expr = parts.slice(1).join('=').trim();
+    
+    // Strip units from formula (e.g., "0.145 kg" -> "0.145", "50 m/s" -> "50")
+    const exprBefore = expr;
+    expr = expr.replace(/(\d+\.?\d*)\s*\b(kg|g|m|s|m\/s|Pa|N|J|K|C|A|V|W|Hz|rad|rpm|bar|psi|L|ml|%|mm|cm|nm|kW|MW|GW|kWh|MWh|kPa|MPa|GPa|km|h|min|sec|ms)\b/g, '$1');
+    if (exprBefore !== expr) {
+        logger.warn('Formula had units stripped', { before: exprBefore.substring(0,100), after: expr.substring(0,100) });
+    }
 
     // Replace symbol names (longest first to avoid partial replace)
     const syms = Object.keys(inputs).sort((a,b) => b.length - a.length);
@@ -2066,10 +2073,14 @@ Query: "${query}"${preferredStd ? ` Standard: ${preferredStd}.` : ''}${specificF
 
 Rules:
 - Return ONLY raw JSON. No markdown, no code fences, no explanation before or after.
-- 1 to 5 steps. Each step is one formula.
+- 1 to 5 steps. Each step is one formula that calculates a result.
 - defaultValue must be a number or null — never a string.
 - Keep all text fields short and plain — no special characters, no line breaks inside strings.
-- formula field: write it as a simple equation e.g. "Q = A x v" using plain ASCII only.
+- CRITICAL: formula field MUST contain ONLY mathematical expressions with variables. NO UNITS or constants in formulas.
+  Example: formula = "KE = 0.5 * m * v^2" (NOT "KE = 0.5 * 0.145 kg * (50 m/s)^2")
+- Each variable's unit must be in the variables[].unit field, NEVER in the formula.
+- Use ASCII only: * multiply, / divide, ^ power. Use lowercase variable names (m, v, etc).
+- Do NOT create steps that are just unit definitions like "m = 0.145 kg". Only real calculation formulas.
 
 JSON structure (copy exactly, fill in values):
 {"title":"","note":"","steps":[{"standard":"","standardName":"","cat":"","description":"","formula":"","formulaDescription":"","variables":[{"symbol":"","name":"","description":"","unit":"","defaultValue":null}],"resultVariable":{"symbol":"","name":"","unit":""}}]}`;
@@ -2083,6 +2094,27 @@ JSON structure (copy exactly, fill in values):
     if (!parsed.steps || !Array.isArray(parsed.steps) || parsed.steps.length === 0) {
         throw new Error('AI returned invalid workflow structure');
     }
+
+    // Filter and clean steps - remove non-formula steps
+    parsed.steps = parsed.steps.filter(s => {
+        // Must have a formula with = sign
+        if (!s.formula || !s.formula.includes('=')) {
+            logger.warn('Filtered non-formula step', { formula: s.formula });
+            return false;
+        }
+        // Must have variables
+        if (!s.variables || !Array.isArray(s.variables) || s.variables.length === 0) {
+            logger.warn('Filtered step with no variables', { formula: s.formula });
+            return false;
+        }
+        return true;
+    });
+
+    if (parsed.steps.length === 0) {
+        throw new Error('No valid calculation formulas in AI response');
+    }
+
+    logger.info('AI steps validated and cleaned', { stepsRemaining: parsed.steps.length });
 
     // Tag each step with the AI source
     parsed.steps = parsed.steps.map(s => ({ ...s, source: `AI Workflow · ${aiLabel}` }));
