@@ -126,7 +126,7 @@
         input[type="number"] { width:100%; padding:0.6rem; border:2px solid #e2e8f0; border-radius:6px; font-size:0.95rem; }
         input[type="number"]:focus { outline:none; border-color:#2563eb; }
 
-        .result-box { background:#1e40af; color:white; padding:1.5rem; border-radius:8px; margin-top:1.25rem; }
+        .result-box { background:#1e40af; color:white; padding:1.25rem 1.5rem; border-radius:8px; margin-top:1rem; display:inline-block; min-width:220px; max-width:420px; width:auto; }
         .result-label { font-size:0.82rem; opacity:0.85; margin-bottom:0.3rem; }
         .result-value { font-size:2.2rem; font-weight:700; }
         .result-unit  { font-size:1rem; opacity:0.85; margin-top:0.2rem; }
@@ -2788,8 +2788,8 @@ function calculateStep(stepIdx) {
         addToHistory(f.formula, inputs, result, f.resultVariable.unit);
 
         box.innerHTML = `
-            <div style="display:flex;align-items:flex-start;gap:0.75rem">
-                <div style="flex:1">
+            <div style="display:flex;align-items:flex-start;gap:0.75rem;flex-wrap:wrap">
+                <div>
                     <div class="result-box">
                         <div class="result-label">${f.resultVariable.name}</div>
                         <div class="result-value" style="font-size:1.6rem">${fmt(result)}</div>
@@ -3168,8 +3168,8 @@ function calculate() {
         addToHistory(currentCalc.formula, inputs, result, currentCalc.resultVariable.unit);
         
         box.innerHTML = `
-            <div style="display:flex;align-items:flex-start;gap:0.75rem">
-                <div style="flex:1">
+            <div style="display:flex;align-items:flex-start;gap:0.75rem;flex-wrap:wrap">
+                <div>
                     <div class="result-box">
                         <div class="result-label">${currentCalc.resultVariable.name}</div>
                         <div class="result-value">${fmt(result)}</div>
