@@ -1560,7 +1560,7 @@ if (typeof FORMULA_DB !== 'undefined') {
 
 // Now compute after full merge
 const CATEGORIES = [...new Set(Object.values(FORMULA_DB).map(f => f.cat))].sort();
-const FORMULA_COUNT = Object.keys(FORMULA_DB).length;
+let FORMULA_COUNT = Object.keys(FORMULA_DB).length;
 
 // ── State ─────────────────────────────────────────────────────────────────────
 let aiCfg = { mode:null, apiKey:null, localModel:null, ready:false };
