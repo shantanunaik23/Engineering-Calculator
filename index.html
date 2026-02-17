@@ -2008,6 +2008,9 @@ async function searchFormula() {
         } catch(e) {
             // AI failed — show brief warning then fall through to DB search
             console.warn('AI workflow failed:', e.message);
+            // Automatically show logger so user can see why the AI failed
+            const loggerPanel = document.getElementById('loggerPanel');
+            if (loggerPanel) loggerPanel.style.display = 'block';
             showToast('AI workflow failed: ' + e.message + ' — searching built-in database…', false);
         }
         setLoading(false);
@@ -2067,50 +2070,98 @@ async function generateAIWorkflow(query, preferredStd, specificFormula) {
 
     // Simpler schema = fewer LLM JSON errors. defaultValue must be number or null (never a string).
     const prompt =
-`You are a senior chartered engineer. Analyse this engineering query and return a calculation workflow as JSON.
+`You are an expert engineer. The user asked: "${query}"${preferredStd ? ` Use standard: ${preferredStd}` : ''}${specificFormula ? ` Include formula: ${specificFormula}` : ''}
 
-Query: "${query}"${preferredStd ? ` Standard: ${preferredStd}.` : ''}${specificFormula ? ` Formula: ${specificFormula}.` : ''}
+Generate a multi-step calculation workflow as VALID JSON. Return ONLY the JSON object below with NO other text.
 
-Rules:
-- Return ONLY raw JSON. No markdown, no code fences, no explanation before or after.
-- 1 to 5 steps. Each step is one formula that calculates a result.
-- defaultValue must be a number or null — never a string.
-- Keep all text fields short and plain — no special characters, no line breaks inside strings.
-- CRITICAL: formula field MUST contain ONLY mathematical expressions with variables. NO UNITS or constants in formulas.
-  Example: formula = "KE = 0.5 * m * v^2" (NOT "KE = 0.5 * 0.145 kg * (50 m/s)^2")
-- Each variable's unit must be in the variables[].unit field, NEVER in the formula.
-- Use ASCII only: * multiply, / divide, ^ power. Use lowercase variable names (m, v, etc).
-- Do NOT create steps that are just unit definitions like "m = 0.145 kg". Only real calculation formulas.
+REQUIRED: Each step MUST have these exact fields:
+- formula: Contains variables and = sign. E.g., "P = ρ × g × h"
+- variables: Array of {symbol, name, unit, description, defaultValue}
+- resultVariable: {symbol, name, unit} for what this step calculates
+- description, standard, standardName, cat, formulaDescription
 
-JSON structure (copy exactly, fill in values):
-{"title":"","note":"","steps":[{"standard":"","standardName":"","cat":"","description":"","formula":"","formulaDescription":"","variables":[{"symbol":"","name":"","description":"","unit":"","defaultValue":null}],"resultVariable":{"symbol":"","name":"","unit":""}}]}`;
+CRITICAL: Every step must calculate something real using the formula. Do not skip variables.
+
+Example JSON (copy this structure exactly):
+{
+  "title": "Pressure Calculation Workflow",
+  "note": "Step-by-step pressure calculations",
+  "steps": [
+    {
+      "standard": "BS EN 1997-1",
+      "standardName": "Eurocode 7 Geotechnical design",
+      "cat": "Hydrostatics",
+      "description": "Calculate hydrostatic pressure at depth.",
+      "formula": "P = ρ × g × h",
+      "formulaDescription": "Pressure increases linearly with depth.",
+      "variables": [
+        {"symbol": "ρ", "name": "Fluid Density", "unit": "kg/m³", "description": "Density of water", "defaultValue": 1000},
+        {"symbol": "g", "name": "Gravity", "unit": "m/s²", "description": "Gravitational acceleration", "defaultValue": 9.81},
+        {"symbol": "h", "name": "Depth", "unit": "m", "description": "Depth below surface", "defaultValue": null}
+      ],
+      "resultVariable": {"symbol": "P", "name": "Hydrostatic Pressure", "unit": "Pa"}
+    }
+  ]
+}
+
+NOW generate the JSON for: "${query}"${preferredStd ? ` Standard: ${preferredStd}` : ''}${specificFormula ? ` Formula: ${specificFormula}` : ''}
+RETURN ONLY THE JSON OBJECT. NO EXPLANATIONS.`;
 
     const raw = await callAI(prompt);
     logger.info('AI response received', { responseLength: raw.length });
     const parsed = parseJSON(raw);
-    logger.info('AI response parsed', { steps: parsed.steps?.length, title: parsed.title });
+    logger.info('AI response parsed', { steps: parsed.steps?.length, title: parsed.title, parsed });
 
     // Validate minimum structure
     if (!parsed.steps || !Array.isArray(parsed.steps) || parsed.steps.length === 0) {
+        logger.error('AI returned invalid workflow structure', { parsed });
         throw new Error('AI returned invalid workflow structure');
     }
 
-    // Filter and clean steps - remove non-formula steps
+    logger.info('AI raw steps (before filtering)', { 
+        count: parsed.steps.length,
+        firstStep: parsed.steps[0]
+    });
+
+    // Filter and clean steps - remove invalid steps with lenient but essential validation
     parsed.steps = parsed.steps.filter(s => {
-        // Must have a formula with = sign
-        if (!s.formula || !s.formula.includes('=')) {
-            logger.warn('Filtered non-formula step', { formula: s.formula });
+        // Must have a formula with = sign (stripped of whitespace for check)
+        if (!s.formula || typeof s.formula !== 'string') {
+            logger.warn('Filtered step: missing/invalid formula', { formula: s.formula, step: s });
             return false;
         }
-        // Must have variables
+        const formulaTrimmed = s.formula.trim();
+        if (formulaTrimmed.length < 2 || !formulaTrimmed.includes('=')) {
+            logger.warn('Filtered step: formula missing = or too short', { formula: s.formula });
+            return false;
+        }
+        // Must have variables array
         if (!s.variables || !Array.isArray(s.variables) || s.variables.length === 0) {
-            logger.warn('Filtered step with no variables', { formula: s.formula });
+            logger.warn('Filtered step: missing/invalid variables', { formula: s.formula, variables: s.variables });
+            return false;
+        }
+        // CRITICAL: must have resultVariable with at least symbol and name
+        if (!s.resultVariable) {
+            logger.warn('Filtered step: missing resultVariable object', { formula: s.formula });
+            return false;
+        }
+        if (!s.resultVariable.symbol || !s.resultVariable.name) {
+            logger.warn('Filtered step: resultVariable missing symbol or name', { formula: s.formula, resultVariable: s.resultVariable });
+            return false;
+        }
+        // Each variable must have symbol and name (lenient on description/unit)
+        if (!s.variables.every(v => v.symbol && v.name)) {
+            logger.warn('Filtered step: variable missing symbol or name', { formula: s.formula, variables: s.variables });
             return false;
         }
         return true;
     });
 
     if (parsed.steps.length === 0) {
+        logger.error('AI validation failed: no valid steps remaining', { 
+            originalSteps: parsed.steps?.length || 0,
+            allSteps: parsed.steps
+        });
         throw new Error('No valid calculation formulas in AI response');
     }
 
@@ -2162,33 +2213,60 @@ function displayMultiFormula(intent, formulaList) {
     currentCalc = formulaList[0]; // fallback for single-formula features
 
     const stepsHtml = formulaList.map((f, i) => {
+        // Guard: validate step structure
+        if (!f || !f.variables || !Array.isArray(f.variables)) {
+            logger.warn('Invalid step structure at index ' + i, f);
+            return `<div class="multi-step" style="background:#fee2e2;border:1px solid #fca5a5;padding:1rem;border-radius:6px;color:#991b1b">⚠️ Error: Step ${i+1} has invalid structure</div>`;
+        }
+        if (!f.resultVariable || !f.resultVariable.name) {
+            logger.warn('Step missing resultVariable at index ' + i, { resultVariable: f.resultVariable });
+            return `<div class="multi-step" style="background:#fee2e2;border:1px solid #fca5a5;padding:1rem;border-radius:6px;color:#991b1b">⚠️ Error: Step ${i+1} missing result variable</div>`;
+        }
+
         const inputs = f.variables.map((v, vi) => `
             <div class="input-field">
-                <label class="input-label">${v.name} <span style="color:#64748b">(${v.symbol})</span></label>
+                <label class="input-label">${v.name || 'Unknown'} <span style="color:#64748b">(${v.symbol || '?'})</span></label>
                 <div class="input-with-unit">
                     <input type="number" id="multi_${i}_${vi}" step="any"
                            placeholder="${v.defaultValue != null ? 'Default: '+v.defaultValue : 'Enter value'}"
                            value="${v.defaultValue != null ? v.defaultValue : ''}">
-                    <span class="unit-label">${v.unit}</span>
+                    <span class="unit-label">${v.unit || ''}</span>
                 </div>
-                <small style="color:#64748b;font-size:0.78rem;margin-top:0.15rem;display:block">${v.description}</small>
+                <small style="color:#64748b;font-size:0.78rem;margin-top:0.15rem;display:block">${v.description || ''}</small>
             </div>`).join('');
+
+        const varHtml = f.variables.map(v =>
+            `<div class="variable-item"><strong>${v.symbol || '?'}</strong> — ${v.name || 'Unknown'} (${v.unit || ''}): ${v.description || ''}</div>`
+        ).join('');
 
         return `
         <div class="multi-step" id="step_${i}">
-            <div class="multi-step-header">
-                <span class="step-number">Step ${i + 1}</span>
-                <span class="step-title">${f.description ? f.description.split('.')[0] : (f.key||'').replace(/-/g,' ')}</span>
-                <span class="step-standard">${f.standard || ''}</span>
+            <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.75rem;flex-wrap:wrap">
+                <span style="background:#dbeafe;color:#1e40af;padding:0.2rem 0.6rem;border-radius:99px;font-size:0.75rem;font-weight:600">${f.cat || 'Engineering'}</span>
+                <span style="background:#f1f5f9;color:#475569;padding:0.2rem 0.6rem;border-radius:99px;font-size:0.75rem">${f.standard || ''}</span>
             </div>
-            <div class="multi-step-formula">
-                <span style="font-weight:600;color:#1e293b;font-size:0.82rem">Formula: </span>
-                <div style="margin-top:0.4rem">$$${f.formula}$$</div>
+            <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem;flex-wrap:wrap">
+                <span style="background:#2563eb;color:white;border-radius:50%;width:1.6rem;height:1.6rem;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;flex-shrink:0">Step ${i+1}</span>
+                <div style="flex:1">
+                    <div style="font-weight:600;color:#1e293b;font-size:0.95rem">${f.description ? f.description.split('.')[0] : (f.key||'').replace(/-/g,' ')}</div>
+                    <div style="font-size:0.8rem;color:#64748b;margin-top:2px">${f.standardName || f.standard || ''}</div>
+                </div>
             </div>
-            <p style="font-size:0.8rem;color:#64748b;margin:0.3rem 0 0.75rem">${f.formulaDescription || ''}</p>
-            <div class="multi-inputs">${inputs}</div>
+            <div style="background:#f8fafc;padding:0.75rem;border-radius:6px;border:1px solid #e2e8f0;margin-bottom:0.75rem;">
+                <strong style="color:#1e293b;font-size:0.82rem;display:block;margin-bottom:0.4rem">Formula:</strong>
+                <div class="formula-box">$$${f.formula || ''}$$</div>
+            </div>
+            <p style="color:#64748b;font-size:0.82rem;margin:0.3rem 0 0.75rem">${f.formulaDescription || ''}</p>
+            <div class="variables-list" style="margin-bottom:0.75rem;">
+                <strong style="color:#1e293b;font-size:0.875rem;display:block;margin-bottom:0.4rem">Variables:</strong>
+                ${varHtml}
+            </div>
+            <div style="background:#f1f5f9;padding:0.75rem;border-radius:6px;margin-bottom:0.75rem;">
+                <strong style="color:#1e293b;font-size:0.82rem;margin-bottom:0.4rem;display:block">Enter Values:</strong>
+                <div class="multi-inputs">${inputs}</div>
+            </div>
             <button class="multi-calc-btn" onclick="calculateStep(${i})">
-                ▶ Calculate ${f.resultVariable.name} (${f.resultVariable.symbol})
+                ▶ Calculate ${f.resultVariable.name} (${f.resultVariable.symbol || '?'})
             </button>
             <div id="multi_result_${i}" class="multi-result-box" style="display:none"></div>
         </div>`;
