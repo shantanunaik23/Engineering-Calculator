@@ -58,7 +58,7 @@ app.post('/api/ai-call', async (req, res) => {
                 'Authorization': `Bearer ${apiKey}`
             };
             payload = {
-                model: 'llama-3.1-70b-versatile',
+                model: 'mixtral-8x7b-32768',
                 response_format: { type: 'json_object' },
                 messages: [
                     { role: 'system', content: 'Expert engineer. JSON only.' },
