@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shan's Engineering Calculator</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/contrib/auto-render.min.js"
+            onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif; background: #f5f7fa; min-height: 100vh; padding: 1.5rem; }
@@ -101,7 +105,7 @@
         .copy-btn { padding:0.35rem 0.7rem; background:white; border:1px solid #cbd5e1; border-radius:6px; font-size:0.78rem; cursor:pointer; color:#475569; display:flex; align-items:center; gap:0.3rem; transition:all 0.2s; }
         .copy-btn:hover { border-color:#2563eb; color:#2563eb; }
         .standard-description { color:#475569; line-height:1.6; font-size:0.9rem; margin-bottom:0.75rem; }
-        .formula-box { background:white; padding:0.875rem 1rem; border-radius:6px; border:1px solid #cbd5e1; font-family:'Courier New',monospace; margin-top:0.75rem; font-size:0.975rem; overflow-x:auto; }
+        .formula-box { background:white; padding:0.875rem 1rem; border-radius:6px; border:1px solid #cbd5e1; margin-top:0.75rem; font-size:1.1rem; overflow-x:auto; display:flex; align-items:center; justify-content:center; min-height:2rem; }
         .variables-list { margin-top:0.75rem; padding:0.875rem; background:white; border-radius:6px; border:1px solid #e2e8f0; }
         .variable-item { color:#475569; margin:0.2rem 0; font-size:0.875rem; }
 
@@ -175,7 +179,7 @@
         .formula-card:hover { border-color:#2563eb;background:#eff6ff; }
         .formula-card-title { font-size:0.8rem;font-weight:600;color:#1e293b;margin-bottom:0.2rem; }
         .formula-card-standard { font-size:0.72rem;color:#64748b; }
-        .formula-card-formula { font-size:0.72rem;font-family:'Courier New',monospace;color:#2563eb;margin-top:0.2rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+        .formula-card-formula { font-size:0.75rem;color:#2563eb;margin-top:0.2rem;max-height:1.5em;overflow:hidden;text-overflow:ellipsis; }
         /* ── Multi-formula workflow ── */
         .multi-workflow-header { background:white; border-radius:8px; padding:1.25rem 1.5rem; margin-bottom:1rem; box-shadow:0 1px 3px rgba(0,0,0,0.08); border-left:4px solid #2563eb; }
         .multi-step { background:white; border-radius:8px; padding:1.25rem 1.5rem; margin-bottom:0.75rem; box-shadow:0 1px 3px rgba(0,0,0,0.08); border:1.5px solid #e2e8f0; transition:border-color 0.2s; }
@@ -184,7 +188,7 @@
         .step-number { background:#2563eb; color:white; border-radius:50%; width:1.6rem; height:1.6rem; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:700; flex-shrink:0; }
         .step-title { font-weight:600; color:#1e293b; font-size:0.9rem; flex:1; }
         .step-standard { background:#f1f5f9; color:#475569; padding:0.15rem 0.5rem; border-radius:4px; font-size:0.72rem; white-space:nowrap; }
-        .multi-step-formula { background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:0.6rem 0.875rem; margin-bottom:0.5rem; }
+        .multi-step-formula { background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:0.75rem 0.875rem; margin-bottom:0.5rem; font-size:0.9rem; }
         .multi-inputs { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:0.75rem; margin-bottom:0.75rem; }
         .multi-calc-btn { background:#0f172a; color:white; border:none; border-radius:6px; padding:0.5rem 1.1rem; font-size:0.85rem; font-weight:500; cursor:pointer; transition:background 0.15s; }
         .multi-calc-btn:hover { background:#1e40af; }
@@ -381,6 +385,17 @@
                 <span style="margin-left:auto;font-size:0.72rem;color:#94a3b8">click any workflow to load it instantly</span>
             </button>
             <div id="workflowBody" style="display:none;margin-top:0.75rem"></div>
+        </div>
+
+        <!-- Recently Added Workflows -->
+        <div id="recentlyAddedBrowser" style="border-top:1px solid #f1f5f9;padding-top:0.75rem;display:none">
+            <button onclick="toggleRecentlyAdded()" style="display:flex;align-items:center;gap:0.5rem;background:none;border:none;cursor:pointer;color:#64748b;font-size:0.82rem;padding:0;width:100%;text-align:left">
+                <span id="recentlyAddedArrow">▶</span>
+                <span style="font-weight:600;color:#475569">⭐ Recently Added</span>
+                <span style="margin-left:0.5rem;color:#94a3b8;font-size:0.78rem" id="recentlyAddedCount"></span>
+                <span style="margin-left:auto;font-size:0.72rem;color:#94a3b8">your custom workflows</span>
+            </button>
+            <div id="recentlyAddedBody" style="display:none;margin-top:0.75rem"></div>
         </div>
 
     </div>
@@ -2087,7 +2102,7 @@ function displayMultiFormula(intent, formulaList) {
             </div>
             <div class="multi-step-formula">
                 <span style="font-weight:600;color:#1e293b;font-size:0.82rem">Formula: </span>
-                <code style="font-size:0.88rem;color:#2563eb">${f.formula}</code>
+                <div style="margin-top:0.4rem">$$${f.formula}$$</div>
             </div>
             <p style="font-size:0.8rem;color:#64748b;margin:0.3rem 0 0.75rem">${f.formulaDescription || ''}</p>
             <div class="multi-inputs">${inputs}</div>
@@ -2102,6 +2117,11 @@ function displayMultiFormula(intent, formulaList) {
         ? `<button class="action-btn ${cls}" onclick="${fn}">${icon} ${label}</button>`
         : `<button class="action-btn btn-locked" onclick="openModal()">${icon} ${label} 🔒</button>`;
 
+    const isSaveableWorkflow = intent._aiGenerated || (intent.keys && intent.keys.length > 0);
+    const saveButtonHtml = isSaveableWorkflow 
+        ? `<button onclick="saveWorkflowAsNew()" style="background:#10b981;color:white;padding:0.5rem 1.2rem;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.85rem;margin-left:0.5rem">💾 Save Workflow</button>`
+        : '';
+
     r.innerHTML = `
         <div class="multi-workflow-header">
             <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;margin-bottom:0.5rem">
@@ -2111,6 +2131,7 @@ function displayMultiFormula(intent, formulaList) {
                     <div style="font-size:0.8rem;color:#64748b;margin-top:2px">${formulaList.length} step${formulaList.length>1?'s':''} · ${[...new Set(formulaList.map(f=>f.standard).filter(Boolean))].slice(0,4).join(' · ') || 'AI-generated workflow'}</div>
                 </div>
                 <button onclick="calculateAll()" style="margin-left:auto;background:#2563eb;color:white;padding:0.5rem 1.2rem;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.85rem">⚡ Calculate All</button>
+                ${saveButtonHtml}
             </div>
             <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:6px;padding:0.75rem;font-size:0.82rem;color:#0c4a6e">
                 💡 <strong>Workflow:</strong> ${intent.note}
@@ -2138,6 +2159,13 @@ function displayMultiFormula(intent, formulaList) {
             </div>
         </div>`;
     r.classList.add('visible');
+    
+    // Render formulas with KaTeX
+    if (typeof renderMathInElement !== 'undefined') {
+        setTimeout(() => {
+            renderMathInElement(r, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});
+        }, 0);
+    }
 }
 
 let currentMultiCalc = [];
@@ -2190,10 +2218,15 @@ function calculateStep(stepIdx) {
                 <div class="result-label">${f.resultVariable.name}</div>
                 <div class="result-value" style="font-size:1.6rem">${fmt(result)}</div>
                 <div class="result-unit">${f.resultVariable.unit}</div>
-                <div class="result-steps" style="font-size:0.78rem;margin-top:0.4rem">
-                    ${f.formula} = <strong>${fmt(result)} ${f.resultVariable.unit}</strong>
+                <div class="result-steps" style="font-size:0.9rem;margin-top:0.6rem;padding:0.5rem;background:#f8fafc;border-radius:4px">
+                    $$${f.formula} = \\text{ }${fmt(result)} \\text{ } ${f.resultVariable.unit}$$
                 </div>
             </div>`;
+
+        // Render formulas with KaTeX
+        if (typeof renderMathInElement !== 'undefined') {
+            renderMathInElement(box, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});
+        }
 
         // Auto-propagate to downstream steps
         propagateResult(f.resultVariable.symbol, result, stepIdx);
@@ -2266,6 +2299,147 @@ function propagateResult(symbol, value, fromStepIdx) {
 }
 
 // ════════════════════════════════════════════════════════════════
+// WORKFLOW PERSISTENCE (localStorage)
+// ════════════════════════════════════════════════════════════════
+function saveWorkflowAsNew() {
+    if (!currentMultiCalc || currentMultiCalc.length === 0) {
+        showToast('No workflow to save', false);
+        return;
+    }
+
+    // Prompt user for workflow name and description
+    const defaultName = document.querySelector('.multi-workflow-header .multi-step-header')?.textContent || 
+                        currentMultiCalc[0]?.description?.split('.')[0] || 'Custom Workflow';
+    const name = prompt('Enter a name for this workflow:', defaultName);
+    if (!name) return;
+
+    const description = prompt('Enter a brief description (optional):', '');
+
+    // Build workflow object with clean step structure
+    const workflow = {
+        id: Date.now().toString(),
+        title: name,
+        note: description,
+        keys: currentMultiCalc.map(f => f.key).filter(Boolean),
+        patterns: [name.toLowerCase()],
+        steps: currentMultiCalc.map(f => {
+            // Only copy input variables, exclude result variable from inputs
+            const cleanVariables = Array.isArray(f.variables) 
+                ? f.variables.filter(v => v && v.symbol && v.name)
+                : [];
+            
+            return {
+                standard: f.standard || '',
+                standardName: f.standardName || '',
+                cat: f.cat || '',
+                description: f.description || '',
+                formula: f.formula || '',
+                formulaDescription: f.formulaDescription || '',
+                variables: cleanVariables,
+                resultVariable: f.resultVariable && f.resultVariable.symbol 
+                    ? {
+                        symbol: f.resultVariable.symbol,
+                        name: f.resultVariable.name,
+                        unit: f.resultVariable.unit
+                    }
+                    : { symbol: '', name: '', unit: '' }
+            };
+        }),
+        created: new Date().toISOString(),
+        _custom: true,
+    };
+
+    // Save to localStorage
+    addRecentlyAddedWorkflow(workflow);
+    showToast(`✅ Workflow "${name}" saved! Check the "Recently Added" section below.`, true);
+    refreshRecentlyAddedSection();
+}
+
+function addRecentlyAddedWorkflow(workflow) {
+    let recent = JSON.parse(localStorage.getItem('recentlyAddedWorkflows') || '[]');
+    // Check for duplicates by name
+    recent = recent.filter(w => w.title !== workflow.title);
+    recent.unshift(workflow);
+    // Keep only last 10
+    recent = recent.slice(0, 10);
+    localStorage.setItem('recentlyAddedWorkflows', JSON.stringify(recent));
+}
+
+function getRecentlyAddedWorkflows() {
+    return JSON.parse(localStorage.getItem('recentlyAddedWorkflows') || '[]');
+}
+
+function loadCustomWorkflow(workflowId) {
+    const recent = getRecentlyAddedWorkflows();
+    const workflow = recent.find(w => w.id === workflowId);
+    if (!workflow) {
+        showToast('Workflow not found', false);
+        return;
+    }
+
+    // Build intent object from custom workflow
+    const intent = {
+        title: workflow.title,
+        note: workflow.note,
+        _aiGenerated: false,
+        _custom: true,
+    };
+
+    // Convert steps back to formula objects
+    const formulaList = workflow.steps;
+    
+    // Display the workflow
+    document.getElementById('resultsSection').classList.remove('visible');
+    displayMultiFormula(intent, formulaList);
+    window.scrollTo({top: document.getElementById('resultsSection').offsetTop, behavior: 'smooth'});
+}
+
+function deleteCustomWorkflow(workflowId) {
+    if (!confirm('Delete this workflow?')) return;
+    let recent = JSON.parse(localStorage.getItem('recentlyAddedWorkflows') || '[]');
+    recent = recent.filter(w => w.id !== workflowId);
+    localStorage.setItem('recentlyAddedWorkflows', JSON.stringify(recent));
+    refreshRecentlyAddedSection();
+    showToast('Workflow deleted', true);
+}
+
+function refreshRecentlyAddedSection() {
+    const browser = document.getElementById('recentlyAddedBrowser');
+    const body = document.getElementById('recentlyAddedBody');
+    if (!browser || !body) return;
+
+    const workflows = getRecentlyAddedWorkflows();
+    if (workflows.length === 0) {
+        browser.style.display = 'none';
+        return;
+    }
+
+    browser.style.display = 'block';
+    const countEl = document.getElementById('recentlyAddedCount');
+    if (countEl) countEl.textContent = `${workflows.length} workflow${workflows.length!==1?'s':''}`;
+
+    const grid = workflows.map(w => `
+        <div style="background:#fafafa;border:1px solid #e2e8f0;border-radius:6px;padding:0.75rem;cursor:pointer;transition:all 0.15s"
+             onmouseover="this.style.borderColor='#10b981';this.style.background='#f0fdf4'"
+             onmouseout="this.style.borderColor='#e2e8f0';this.style.background='#fafafa'">
+            <div style="font-size:0.82rem;font-weight:600;color:#1e293b;margin-bottom:0.25rem">${w.title}</div>
+            <div style="font-size:0.72rem;color:#64748b;margin-bottom:0.35rem;height:2.5em;overflow:hidden;text-overflow:ellipsis">${w.note||'AI-suggested workflow'}</div>
+            <div style="display:flex;align-items:center;gap:0.4rem;flex-wrap:wrap;justify-content:space-between">
+                <span style="background:#dcfce7;color:#166534;padding:0.1rem 0.4rem;border-radius:99px;font-size:0.68rem;font-weight:600">${w.steps?.length || w.keys?.length || 0} step${(w.steps?.length || w.keys?.length || 0)!==1?'s':''}</span>
+                <div style="display:flex;gap:0.3rem">
+                    <button onclick="loadCustomWorkflow('${w.id}')" style="background:none;border:none;cursor:pointer;color:#2563eb;font-size:0.75rem;padding:0.2rem 0.4rem;border-radius:3px;transition:background 0.2s" onmouseover="this.style.background='#eff6ff'" onmouseout="this.style.background='none'">📂 Load</button>
+                    <button onclick="deleteCustomWorkflow('${w.id}')" style="background:none;border:none;cursor:pointer;color:#dc2626;font-size:0.75rem;padding:0.2rem 0.4rem;border-radius:3px;transition:background 0.2s" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='none'">🗑️</button>
+                </div>
+            </div>
+        </div>`).join('');
+
+    body.innerHTML = `
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:0.5rem;max-height:320px;overflow-y:auto">
+            ${grid}
+        </div>`;
+}
+
+// ════════════════════════════════════════════════════════════════
 // SINGLE FORMULA DISPLAY
 // ════════════════════════════════════════════════════════════════
 function displayResults(d, related=[]) {
@@ -2317,7 +2491,7 @@ function displayResults(d, related=[]) {
             </div>
             <div class="standard-description">${d.description}</div>
             <strong style="color:#1e293b;font-size:0.875rem">Formula:</strong>
-            <div class="formula-box" id="formulaBox">${d.formula}</div>
+            <div class="formula-box" id="formulaBox">$$${d.formula}$$</div>
             <p style="color:#64748b;font-size:0.82rem;margin-top:0.4rem">${d.formulaDescription}</p>
             <div class="variables-list" style="margin-top:0.75rem">
                 <strong style="color:#1e293b;font-size:0.875rem;display:block;margin-bottom:0.4rem">Variables:</strong>
@@ -2356,6 +2530,13 @@ function displayResults(d, related=[]) {
             <div class="meta-row"><span class="meta-label">Generated</span><span>${new Date().toLocaleString()}</span></div>
         </div>`;
     r.classList.add('visible');
+    
+    // Render formulas with KaTeX
+    if (typeof renderMathInElement !== 'undefined') {
+        setTimeout(() => {
+            renderMathInElement(r, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});
+        }, 0);
+    }
 }
 
 function loadFormula(key) {
@@ -2395,8 +2576,13 @@ function calculate() {
                 <div class="result-label">${currentCalc.resultVariable.name}</div>
                 <div class="result-value">${fmt(result)}</div>
                 <div class="result-unit">${currentCalc.resultVariable.unit}</div>
-                <div class="result-steps">Formula: ${currentCalc.formula}</div>
+                <div class="result-steps" style="font-size:0.9rem;margin-top:0.5rem;padding:0.5rem;background:#f8fafc;border-radius:4px">$$${currentCalc.formula}$$</div>
             </div>`;
+        
+        // Render formulas with KaTeX
+        if (typeof renderMathInElement !== 'undefined') {
+            renderMathInElement(box, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});
+        }
     } catch(e) {
         box.innerHTML = `<div class="error-msg"><strong>Error:</strong> ${e.message}</div>`;
     }
@@ -2596,6 +2782,37 @@ function useWorkflow(pattern, title) {
     window.scrollTo({top:0, behavior:'smooth'});
 }
 
+let recentlyAddedInitialised = false;
+function toggleRecentlyAdded() {
+    const body  = document.getElementById('recentlyAddedBody');
+    const arrow = document.getElementById('recentlyAddedArrow');
+    const open  = body.style.display === 'none';
+    body.style.display  = open ? 'block' : 'none';
+    arrow.textContent   = open ? '▼' : '▶';
+    
+    if (open) {
+        // Always refresh when opening to show latest workflows
+        const workflows = getRecentlyAddedWorkflows();
+        if (workflows.length > 0) {
+            const grid = workflows.map(w => `
+                <div style="background:#fafafa;border:1px solid #e2e8f0;border-radius:6px;padding:0.75rem;cursor:pointer;transition:all 0.15s"
+                     onmouseover="this.style.borderColor='#10b981';this.style.background='#f0fdf4'"
+                     onmouseout="this.style.borderColor='#e2e8f0';this.style.background='#fafafa'">
+                    <div style="font-size:0.82rem;font-weight:600;color:#1e293b;margin-bottom:0.25rem">${w.title}</div>
+                    <div style="font-size:0.72rem;color:#64748b;margin-bottom:0.35rem;max-height:2em;overflow:hidden;text-overflow:ellipsis">${w.note||'AI-suggested workflow'}</div>
+                    <div style="display:flex;align-items:center;gap:0.4rem;flex-wrap:wrap;justify-content:space-between">
+                        <span style="background:#dcfce7;color:#166534;padding:0.1rem 0.4rem;border-radius:99px;font-size:0.68rem;font-weight:600">${w.steps?.length || w.keys?.length || 0} step${(w.steps?.length || w.keys?.length || 0)!==1?'s':''}</span>
+                        <div style="display:flex;gap:0.3rem">
+                            <button onclick="loadCustomWorkflow('${w.id}')" style="background:none;border:none;cursor:pointer;color:#2563eb;font-size:0.75rem;padding:0.2rem 0.4rem;border-radius:3px;transition:background 0.2s" onmouseover="this.style.background='#eff6ff'" onmouseout="this.style.background='none'">📂 Load</button>
+                            <button onclick="deleteCustomWorkflow('${w.id}')" style="background:none;border:none;cursor:pointer;color:#dc2626;font-size:0.75rem;padding:0.2rem 0.4rem;border-radius:3px;transition:background 0.2s" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='none'">🗑️</button>
+                        </div>
+                    </div>
+                </div>`).join('');
+            body.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:0.5rem;max-height:320px;overflow-y:auto">${grid}</div>`;
+        }
+    }
+}
+
 let browserInitialised = false;
 function initBrowserContent() {
     if (browserInitialised) return;
@@ -2682,6 +2899,17 @@ document.addEventListener('DOMContentLoaded', function() {
     if (stats) stats.textContent = `${FORMULA_COUNT} formulas · ${CATEGORIES.length} categories`;
     const wfCount = document.getElementById('workflowCount');
     if (wfCount) wfCount.textContent = `${INTENT_MAP.length} workflows`;
+
+    // Initialize Recently Added section if there are saved workflows
+    const recent = getRecentlyAddedWorkflows();
+    if (recent && recent.length > 0) {
+        const browser = document.getElementById('recentlyAddedBrowser');
+        if (browser) {
+            browser.style.display = 'block';
+            const countEl = document.getElementById('recentlyAddedCount');
+            if (countEl) countEl.textContent = `${recent.length} workflow${recent.length!==1?'s':''}`;
+        }
+    }
 });
 
 </script>
