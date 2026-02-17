@@ -279,7 +279,8 @@
 
             <div id="cloudKeySection">
                 <div class="key-label" id="keyLabel">API Key</div>
-                <input type="password" class="key-input" id="apiKeyInput" placeholder="Paste your API key here…">
+                <input type="password" class="key-input" id="apiKeyInput" placeholder="Paste your API key here…"
+                       oninput="this.value=this.value.replace(/[^\x20-\x7E]/g,'')">
                 <div class="privacy-note">🔒 Your key is stored only in your browser and sent directly to the AI provider. It never touches any other server.</div>
             </div>
 
@@ -332,24 +333,56 @@
     </div>
     </div>
 
+    <!-- AI Connection Prompt Banner (hidden once AI is connected) -->
+    <div id="aiPromptBanner" style="background:linear-gradient(135deg,#eff6ff,#f5f3ff);border:1px solid #bfdbfe;border-radius:8px;padding:1rem 1.25rem;margin-bottom:1rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
+        <div style="font-size:1.5rem">🤖</div>
+        <div style="flex:1;min-width:200px">
+            <div style="font-weight:600;color:#1e293b;font-size:0.9rem;margin-bottom:0.2rem">Connect an AI for plain-English queries</div>
+            <div style="font-size:0.8rem;color:#475569;line-height:1.5">
+                <strong>With AI:</strong> type anything — <em>"what size pump do I need for a 50mm pipe at 3 bar"</em> — and get a full multi-step workflow generated instantly.<br>
+                <strong>Without AI:</strong> search by formula or workflow name from the database below (e.g. <em>"pipe deflection"</em>, <em>"cable sizing"</em>).
+            </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:0.5rem;flex-shrink:0">
+            <button onclick="openModal()" style="background:#2563eb;color:white;border:none;border-radius:6px;padding:0.5rem 1.1rem;font-size:0.83rem;font-weight:600;cursor:pointer;white-space:nowrap">⚡ Connect AI</button>
+            <button onclick="document.getElementById('aiPromptBanner').style.display='none'" style="background:none;border:none;color:#94a3b8;font-size:0.75rem;cursor:pointer;padding:0">Dismiss</button>
+        </div>
+    </div>
+
     <div id="loadingSection" class="search-section loading" style="display:none;">
         <div class="spinner"></div><p id="loadingMsg">Searching…</p>
     </div>
 
     <div id="resultsSection" class="results-section"></div>
 
-    <!-- Formula Browser (collapsed by default, bottom of page) -->
-    <div id="formulaBrowser" style="margin-top:2rem;border-top:1px solid #e2e8f0;padding-top:1rem">
-        <button onclick="toggleBrowser()" style="display:flex;align-items:center;gap:0.5rem;background:none;border:none;cursor:pointer;color:#64748b;font-size:0.82rem;padding:0;width:100%;text-align:left">
-            <span id="browserArrow">▶</span>
-            <span style="font-weight:600;color:#475569">📚 Formula Browser</span>
-            <span id="dbStats" style="margin-left:0.5rem;color:#94a3b8;font-size:0.78rem">Loading…</span>
-            <span style="margin-left:auto;font-size:0.72rem;color:#94a3b8">browse all 375+ formulas by category</span>
-        </button>
-        <div id="browserBody" style="display:none;margin-top:0.75rem">
-            <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.6rem" id="categoryTabs"></div>
-            <div id="formulaGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:0.5rem;max-height:300px;overflow-y:auto"></div>
+    <!-- Bottom Reference Panel — Formula Browser + Workflow List -->
+    <div style="margin-top:2rem;border-top:1px solid #e2e8f0;padding-top:1rem;display:flex;flex-direction:column;gap:0.75rem">
+
+        <!-- Formula Browser -->
+        <div id="formulaBrowser">
+            <button onclick="toggleBrowser()" style="display:flex;align-items:center;gap:0.5rem;background:none;border:none;cursor:pointer;color:#64748b;font-size:0.82rem;padding:0;width:100%;text-align:left">
+                <span id="browserArrow">▶</span>
+                <span style="font-weight:600;color:#475569">📚 Formula Browser</span>
+                <span id="dbStats" style="margin-left:0.5rem;color:#94a3b8;font-size:0.78rem">Loading…</span>
+                <span style="margin-left:auto;font-size:0.72rem;color:#94a3b8">browse all formulas by category</span>
+            </button>
+            <div id="browserBody" style="display:none;margin-top:0.75rem">
+                <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.6rem" id="categoryTabs"></div>
+                <div id="formulaGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:0.5rem;max-height:300px;overflow-y:auto"></div>
+            </div>
         </div>
+
+        <!-- Workflow Browser -->
+        <div id="workflowBrowser" style="border-top:1px solid #f1f5f9;padding-top:0.75rem">
+            <button onclick="toggleWorkflows()" style="display:flex;align-items:center;gap:0.5rem;background:none;border:none;cursor:pointer;color:#64748b;font-size:0.82rem;padding:0;width:100%;text-align:left">
+                <span id="workflowArrow">▶</span>
+                <span style="font-weight:600;color:#475569">🔗 Built-in Workflows</span>
+                <span style="margin-left:0.5rem;color:#94a3b8;font-size:0.78rem" id="workflowCount"></span>
+                <span style="margin-left:auto;font-size:0.72rem;color:#94a3b8">click any workflow to load it instantly</span>
+            </button>
+            <div id="workflowBody" style="display:none;margin-top:0.75rem"></div>
+        </div>
+
     </div>
 
 </div>
@@ -1310,26 +1343,42 @@ let selectedMode = null;
 // ── Init ──────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function() {
     const saved = localStorage.getItem('secalc_ai');
-    if (saved) { try { aiCfg = JSON.parse(saved); } catch(e){} updateBadge(); }
+    if (saved) {
+        try {
+            aiCfg = JSON.parse(saved);
+            // Local model must be reloaded on every page load — it doesn't persist in memory
+            if (aiCfg.mode === 'local') {
+                aiCfg.ready = false; // mark not ready until reload completes
+                updateBadge();
+                loadLocalModel(true); // auto-reload silently in background
+            } else {
+                updateBadge();
+            }
+        } catch(e) {}
+    }
     const qi = document.getElementById('queryInput');
     if (qi) qi.addEventListener('keypress', e => { if(e.key==='Enter') searchFormula(); });
 });
 
 // ── Badge ─────────────────────────────────────────────────────────────────────
 function updateBadge() {
-    const badge = document.getElementById('aiBadge');
-    const text  = document.getElementById('aiStatusText');
-    const btn   = document.getElementById('aiActionBtn');
+    const badge  = document.getElementById('aiBadge');
+    const text   = document.getElementById('aiStatusText');
+    const btn    = document.getElementById('aiActionBtn');
+    const banner = document.getElementById('aiPromptBanner');
     if (!aiCfg.mode) {
         badge.className='ai-badge offline'; text.textContent='AI: Not Connected';
         btn.textContent='Connect AI'; btn.className='hdr-btn connect'; btn.onclick=openModal;
+        if (banner) banner.style.display='flex';
     } else if (aiCfg.mode==='local') {
         badge.className = aiCfg.ready ? 'ai-badge local' : 'ai-badge loading';
         text.textContent = aiCfg.ready ? `Local AI: ${aiCfg.localModel.split('-').slice(0,2).join(' ')}` : 'Local AI: Loading…';
         btn.textContent='Disconnect'; btn.className='hdr-btn disconnect'; btn.onclick=disconnectAI;
+        if (banner && aiCfg.ready) banner.style.display='none';
     } else {
         badge.className='ai-badge online'; text.textContent=`AI: ${aiCfg.mode.toUpperCase()}`;
         btn.textContent='Disconnect'; btn.className='hdr-btn disconnect'; btn.onclick=disconnectAI;
+        if (banner) banner.style.display='none';
     }
 }
 
@@ -1364,8 +1413,14 @@ async function connectAI() {
         closeModal(); updateBadge();
         await loadLocalModel();
     } else {
-        const key = document.getElementById('apiKeyInput').value.trim();
+        // Strip ALL non-ASCII characters (smart quotes, em-dashes, etc. from copy-paste)
+        // and any whitespace — API keys are always plain ASCII
+        const raw = document.getElementById('apiKeyInput').value;
+        const key = raw.replace(/[^\x20-\x7E]/g, '').trim();
         if (!key) { showToast('Please enter your API key', false); return; }
+        if (key !== raw.trim()) {
+            showToast('Key contained special characters — they were removed automatically', false);
+        }
         aiCfg = { mode:selectedMode, apiKey:key, localModel:null, ready:true };
         localStorage.setItem('secalc_ai', JSON.stringify(aiCfg));
         closeModal(); updateBadge();
@@ -1381,34 +1436,45 @@ function disconnectAI() {
 }
 
 // ── Local Model (WebLLM) ──────────────────────────────────────────────────────
-async function loadLocalModel() {
+async function loadLocalModel(silent = false) {
     const progress = document.getElementById('localProgress');
     const fill     = document.getElementById('progressFill');
     const label    = document.getElementById('progressLabel');
-    progress.style.display='block'; updateBadge();
+
+    // Silent = background auto-reload on page load. Only show progress bar if model
+    // actually needs downloading (not cached). We show it once the engine starts loading.
+    let progressShown = false;
+    const showProgress = () => {
+        if (!progressShown) { progress.style.display = 'block'; progressShown = true; }
+    };
+
+    if (!silent) showProgress();
+    updateBadge();
 
     try {
-        label.textContent='Loading WebLLM library…';
+        if (silent) label.textContent = 'Restoring local AI from cache…';
+        else label.textContent = 'Loading WebLLM library…';
 
         // Dynamically import WebLLM as ES module
         const webllm = await import('https://esm.run/@mlc-ai/web-llm');
 
-        label.textContent=`Downloading ${aiCfg.localModel}…`;
-        fill.style.width='5%';
+        if (!silent) { label.textContent = `Downloading ${aiCfg.localModel}…`; fill.style.width = '5%'; }
 
         webllmEngine = await webllm.CreateMLCEngine(aiCfg.localModel, {
             initProgressCallback: (p) => {
                 const pct = Math.round((p.progress||0)*100);
+                // Only show progress bar if it looks like we're actually downloading
+                if (p.progress > 0 && p.progress < 1) showProgress();
                 fill.style.width = Math.max(5, pct)+'%';
                 label.textContent = p.text || `${pct}% downloaded…`;
             }
         });
 
-        aiCfg.ready=true;
+        aiCfg.ready = true;
         localStorage.setItem('secalc_ai', JSON.stringify(aiCfg));
-        progress.style.display='none';
+        progress.style.display = 'none';
         updateBadge();
-        showToast('Local AI ready — fully private, runs on your device!');
+        showToast(silent ? 'Local AI restored — ready!' : 'Local AI ready — fully private, runs on your device!');
 
     } catch(err) {
         progress.style.display='none';
@@ -1424,7 +1490,7 @@ async function callAI(prompt) {
     if (!aiCfg.mode || !aiCfg.ready) throw new Error('No AI connected');
 
     if (aiCfg.mode==='local') {
-        if (!webllmEngine) throw new Error('Local model not loaded — please reconnect');
+        if (!webllmEngine || !aiCfg.ready) throw new Error('Local model is still loading — please wait for the progress bar to complete');
         const r = await webllmEngine.chat.completions.create({
             messages:[
                 {role:'system',content:'You are an expert mechanical and structural engineer. Always respond with valid JSON only, no markdown, no extra text.'},
@@ -1436,19 +1502,22 @@ async function callAI(prompt) {
     }
 
     let url, headers, payload;
+    // Sanitise key — strip any non-ASCII that may have come from copy-paste or localStorage
+    const safeKey = (aiCfg.apiKey || '').replace(/[^\x20-\x7E]/g, '').trim();
+    if (!safeKey) throw new Error('API key is missing or invalid — please reconnect');
     if (aiCfg.mode==='anthropic') {
         url='https://api.anthropic.com/v1/messages';
-        headers={'Content-Type':'application/json','x-api-key':aiCfg.apiKey,'anthropic-version':'2023-06-01'};
+        headers={'Content-Type':'application/json','x-api-key':safeKey,'anthropic-version':'2023-06-01'};
         payload={model:'claude-sonnet-4-20250514',max_tokens:1500,
             messages:[{role:'user',content:prompt}]};
     } else if (aiCfg.mode==='openai') {
         url='https://api.openai.com/v1/chat/completions';
-        headers={'Content-Type':'application/json','Authorization':'Bearer '+aiCfg.apiKey};
+        headers={'Content-Type':'application/json','Authorization':'Bearer '+safeKey};
         payload={model:'gpt-4o',response_format:{type:'json_object'},
             messages:[{role:'system',content:'Expert engineer. JSON only.'},{role:'user',content:prompt}]};
     } else {
         url='https://api.groq.com/openai/v1/chat/completions';
-        headers={'Content-Type':'application/json','Authorization':'Bearer '+aiCfg.apiKey};
+        headers={'Content-Type':'application/json','Authorization':'Bearer '+safeKey};
         payload={model:'llama-3.1-70b-versatile',response_format:{type:'json_object'},
             messages:[{role:'system',content:'Expert engineer. JSON only.'},{role:'user',content:prompt}]};
     }
@@ -1460,9 +1529,40 @@ async function callAI(prompt) {
 }
 
 function parseJSON(raw) {
-    const m = raw.match(/\{[\s\S]*\}/);
-    if (!m) throw new Error('No JSON in AI response');
-    return JSON.parse(m[0]);
+    // 1. Strip markdown code fences
+    let s = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+
+    // 2. Extract outermost { ... } block
+    const start = s.indexOf('{');
+    const end   = s.lastIndexOf('}');
+    if (start === -1 || end === -1) throw new Error('No JSON object found in AI response');
+    s = s.slice(start, end + 1);
+
+    // 3. Normalise smart quotes
+    s = s.replace(/[\u2018\u2019]/g, "\'")
+         .replace(/[\u201C\u201D]/g, '"');
+
+    // 4. Try parse directly first
+    try { return JSON.parse(s); } catch(e1) {}
+
+    // 5. Fix unescaped literal newlines/tabs inside string values
+    s = s.replace(/"((?:[^"\\]|\\.)*)"/g, (match, inner) => {
+        const fixed = inner
+            .replace(/\n/g, '\\n')
+            .replace(/\r/g, '\\r')
+            .replace(/\t/g, '\\t');
+        return '"' + fixed + '"';
+    });
+
+    // 6. Try again
+    try { return JSON.parse(s); } catch(e2) {}
+
+    // 7. Strip all ASCII control chars except \n \t (now escaped) and retry
+    try {
+        return JSON.parse(s.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, ''));
+    } catch(e3) {
+        throw new Error('JSON parse failed: ' + e3.message.split(' at ')[0]);
+    }
 }
 
 
@@ -1794,10 +1894,48 @@ function evaluateFormula(formula, inputs) {
 async function searchFormula() {
     const q = document.getElementById('queryInput').value.trim();
     if (!q) return;
-    setLoading(true, 'Searching ' + FORMULA_COUNT + ' formulas…');
     document.getElementById('resultsSection').classList.remove('visible');
+    const std  = document.getElementById('preferredStandard').value;
+    const spec = document.getElementById('specificFormula').value.trim();
 
-    // 1. Try intent map first (multi-formula workflows)
+    // ── Local model still loading — tell user to wait ──
+    if (aiCfg.mode === 'local' && !aiCfg.ready) {
+        const r = document.getElementById('resultsSection');
+        r.innerHTML = `<div class="error-msg" style="border-color:#7c3aed;background:#faf5ff">
+            <div style="display:flex;align-items:center;gap:0.75rem">
+                <div class="spinner" style="border-top-color:#7c3aed;width:1.2rem;height:1.2rem;flex-shrink:0"></div>
+                <div>
+                    <strong style="color:#5b21b6">Local AI model is still loading…</strong>
+                    <p style="font-size:0.82rem;color:#6d28d9;margin-top:0.2rem">Please wait for the download to complete, then search again. You can see the progress bar above.</p>
+                </div>
+            </div>
+        </div>`;
+        r.classList.add('visible');
+        return;
+    }
+
+    const aiConnected = aiCfg.mode && aiCfg.ready;
+
+    // ── PATH A: AI connected — use it to interpret the query and build a workflow ──
+    if (aiConnected) {
+        setLoading(true, `🤖 ${aiCfg.mode==='local'?'Local AI':aiCfg.mode.toUpperCase()} is reading your query…`);
+        try {
+            const aiWorkflow = await generateAIWorkflow(q, std, spec);
+            if (aiWorkflow) {
+                setLoading(false);
+                displayAIWorkflow(aiWorkflow, q);
+                return;
+            }
+        } catch(e) {
+            // AI failed — show brief warning then fall through to DB search
+            console.warn('AI workflow failed:', e.message);
+            showToast('AI workflow failed: ' + e.message + ' — searching built-in database…', false);
+        }
+        setLoading(false);
+    }
+
+    // ── PATH B: No AI — try hardcoded intent map ──
+    setLoading(true, 'Searching ' + FORMULA_COUNT + ' formulas…');
     const intent = resolveIntent(q);
     if (intent) {
         const formulaList = intent.keys.map(k => FORMULA_DB[k]).filter(Boolean);
@@ -1808,11 +1946,10 @@ async function searchFormula() {
         }
     }
 
-    // 2. Single formula DB search
+    // ── PATH C: DB keyword search ──
     const hits = searchDB(q);
     if (hits.length > 0) {
         const top = hits[0];
-        // If top hit has a natural workflow, promote it to multi
         const autoIntent = resolveIntent(top.key.replace(/-/g,' '));
         if (autoIntent && autoIntent.keys.length > 1) {
             const formulaList = autoIntent.keys.map(k => FORMULA_DB[k]).filter(Boolean);
@@ -1828,33 +1965,81 @@ async function searchFormula() {
         return;
     }
 
-    // 3. AI fallback
-    if (!aiCfg.mode || !aiCfg.ready) {
-        setLoading(false);
-        const r = document.getElementById('resultsSection');
-        r.innerHTML = `<div class="error-msg"><strong>Not found in the ${FORMULA_COUNT}-formula database.</strong>
-            <div style="margin-top:0.75rem;padding:0.875rem;background:#fef3c7;border:1px solid #fde68a;border-radius:6px;display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
-                <p style="flex:1;color:#92400e;font-size:0.875rem">💡 Connect an AI (local or cloud) to search any engineering formula</p>
-                <button style="background:#d97706;padding:0.45rem 1rem;font-size:0.82rem" onclick="openModal()">Connect AI</button>
-            </div></div>`;
-        r.classList.add('visible'); return;
+    // ── PATH D: Nothing found, not connected ──
+    setLoading(false);
+    const r = document.getElementById('resultsSection');
+    r.innerHTML = `<div class="error-msg"><strong>Not found in the ${FORMULA_COUNT}-formula database.</strong>
+        <div style="margin-top:0.75rem;padding:0.875rem;background:#fef3c7;border:1px solid #fde68a;border-radius:6px;display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
+            <p style="flex:1;color:#92400e;font-size:0.875rem">💡 Connect an AI provider to generate a custom workflow for any engineering query</p>
+            <button style="background:#d97706;padding:0.45rem 1rem;font-size:0.82rem;border:none;border-radius:6px;cursor:pointer;color:white" onclick="openModal()">Connect AI</button>
+        </div></div>`;
+    r.classList.add('visible');
+}
+
+// ════════════════════════════════════════════════════════════════
+// AI WORKFLOW GENERATOR
+// Sends the user's raw query to the AI and gets back a structured
+// multi-step calculation workflow
+// ════════════════════════════════════════════════════════════════
+async function generateAIWorkflow(query, preferredStd, specificFormula) {
+    const aiLabel = aiCfg.mode === 'local' ? `Local AI (${aiCfg.localModel?.split('-')[0] || 'WebLLM'})` : aiCfg.mode.toUpperCase();
+
+    // Simpler schema = fewer LLM JSON errors. defaultValue must be number or null (never a string).
+    const prompt =
+`You are a senior chartered engineer. Analyse this engineering query and return a calculation workflow as JSON.
+
+Query: "${query}"${preferredStd ? ` Standard: ${preferredStd}.` : ''}${specificFormula ? ` Formula: ${specificFormula}.` : ''}
+
+Rules:
+- Return ONLY raw JSON. No markdown, no code fences, no explanation before or after.
+- 1 to 5 steps. Each step is one formula.
+- defaultValue must be a number or null — never a string.
+- Keep all text fields short and plain — no special characters, no line breaks inside strings.
+- formula field: write it as a simple equation e.g. "Q = A x v" using plain ASCII only.
+
+JSON structure (copy exactly, fill in values):
+{"title":"","note":"","steps":[{"standard":"","standardName":"","cat":"","description":"","formula":"","formulaDescription":"","variables":[{"symbol":"","name":"","description":"","unit":"","defaultValue":null}],"resultVariable":{"symbol":"","name":"","unit":""}}]}`;
+
+    const raw = await callAI(prompt);
+    const parsed = parseJSON(raw);
+
+    // Validate minimum structure
+    if (!parsed.steps || !Array.isArray(parsed.steps) || parsed.steps.length === 0) {
+        throw new Error('AI returned invalid workflow structure');
     }
-    const std  = document.getElementById('preferredStandard').value;
-    const spec = document.getElementById('specificFormula').value.trim();
-    setLoading(true, `Asking ${aiCfg.mode==='local'?'local AI':aiCfg.mode.toUpperCase()}…`);
-    try {
-        const raw = await callAI(
-`Engineering expert. User request: "${q}".${std?` Preferred standard: ${std}.`:''}${spec?` Use formula: ${spec}.`:''}
-Return ONLY this JSON (no markdown):
-{"standard":"","standardName":"","description":"","formula":"","formulaDescription":"","variables":[{"symbol":"","name":"","description":"","unit":"","defaultValue":null}],"resultVariable":{"symbol":"","name":"","unit":""}}`
-        );
-        currentCalc = { ...parseJSON(raw), source: aiCfg.mode==='local'?`Local AI (${aiCfg.localModel.split('-')[0]})`:`AI (${aiCfg.mode})` };
-        displayResults(currentCalc, []);
-    } catch(e) {
-        const r = document.getElementById('resultsSection');
-        r.innerHTML = `<div class="error-msg"><strong>AI Error:</strong> ${e.message}</div>`;
-        r.classList.add('visible');
-    } finally { setLoading(false); }
+
+    // Tag each step with the AI source
+    parsed.steps = parsed.steps.map(s => ({ ...s, source: `AI Workflow · ${aiLabel}` }));
+    parsed._aiLabel = aiLabel;
+    return parsed;
+}
+
+// ════════════════════════════════════════════════════════════════
+// DISPLAY AI-GENERATED WORKFLOW
+// Reuses the same multi-step UI as the hardcoded workflows
+// ════════════════════════════════════════════════════════════════
+function displayAIWorkflow(workflow, originalQuery) {
+    const aiLabel = workflow._aiLabel || 'AI';
+    // Build a synthetic intent object compatible with displayMultiFormula
+    const syntheticIntent = {
+        title: workflow.title,
+        note: workflow.note,
+        keys: [],          // not used when formulaList passed directly
+        _aiGenerated: true,
+        _aiLabel: aiLabel,
+    };
+    // displayMultiFormula expects an array of formula objects
+    displayMultiFormula(syntheticIntent, workflow.steps);
+
+    // Append AI badge to the workflow header
+    const header = document.querySelector('.multi-workflow-header');
+    if (header) {
+        const badge = document.createElement('div');
+        badge.style.cssText = 'margin-top:0.5rem;display:flex;align-items:center;gap:0.4rem;font-size:0.75rem;color:#7c3aed';
+        badge.innerHTML = `<span style="background:#ede9fe;color:#5b21b6;padding:0.15rem 0.5rem;border-radius:99px;font-weight:600">✨ Generated by ${aiLabel}</span>
+            <span style="color:#94a3b8">based on your query: "<em>${originalQuery}</em>"</span>`;
+        header.appendChild(badge);
+    }
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -1911,7 +2096,7 @@ function displayMultiFormula(intent, formulaList) {
                 <span style="font-size:1.25rem">🔗</span>
                 <div>
                     <div style="font-size:1.05rem;font-weight:700;color:#1e293b">${intent.title}</div>
-                    <div style="font-size:0.8rem;color:#64748b;margin-top:2px">${formulaList.length} formulas · ${formulaList.map(f=>f.standard).filter((v,i,a)=>a.indexOf(v)===i).join(' · ')}</div>
+                    <div style="font-size:0.8rem;color:#64748b;margin-top:2px">${formulaList.length} step${formulaList.length>1?'s':''} · ${[...new Set(formulaList.map(f=>f.standard).filter(Boolean))].slice(0,4).join(' · ') || 'AI-generated workflow'}</div>
                 </div>
                 <button onclick="calculateAll()" style="margin-left:auto;background:#2563eb;color:white;padding:0.5rem 1.2rem;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.85rem">⚡ Calculate All</button>
             </div>
@@ -2307,6 +2492,98 @@ function toggleBrowser() {
     if (open) initBrowserContent();
 }
 
+let workflowsInitialised = false;
+function toggleWorkflows() {
+    const body  = document.getElementById('workflowBody');
+    const arrow = document.getElementById('workflowArrow');
+    const open  = body.style.display === 'none';
+    body.style.display  = open ? 'block' : 'none';
+    arrow.textContent   = open ? '▼' : '▶';
+    if (open) initWorkflowBrowser();
+}
+
+function initWorkflowBrowser() {
+    if (workflowsInitialised) return;
+    workflowsInitialised = true;
+
+    // Group intents by the category of their first formula key
+    const grouped = {};
+    INTENT_MAP.forEach(intent => {
+        // Determine category from first matched DB formula, fallback to 'General'
+        const firstKey = intent.keys.find(k => FORMULA_DB[k]);
+        const cat = firstKey ? (FORMULA_DB[firstKey].cat || 'General') : 'General';
+        if (!grouped[cat]) grouped[cat] = [];
+        grouped[cat].push(intent);
+    });
+
+    const body = document.getElementById('workflowBody');
+    const cats = Object.keys(grouped).sort();
+
+    // Active category state
+    let activeCat = cats[0];
+
+    // Build category tabs
+    const tabsEl = document.createElement('div');
+    tabsEl.style.cssText = 'display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.75rem';
+
+    const gridEl = document.createElement('div');
+    gridEl.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:0.5rem;max-height:320px;overflow-y:auto';
+
+    function renderWorkflowCards(cat) {
+        const intents = grouped[cat] || [];
+        gridEl.innerHTML = intents.map(intent => {
+            // Get step count from DB keys that resolve
+            const resolvedCount = intent.keys.filter(k => FORMULA_DB[k]).length;
+            // Primary pattern = first (most natural) name
+            const title = intent.title;
+            const example = intent.patterns[0];
+            const standards = [...new Set(intent.keys.map(k => FORMULA_DB[k]?.standard).filter(Boolean))].slice(0,2).join(' · ');
+            return `
+            <div onclick="useWorkflow('${intent.patterns[0].replace(/'/g,"\\'")}','${intent.title.replace(/'/g,"\\'")}')"
+                 style="background:#fafafa;border:1px solid #e2e8f0;border-radius:6px;padding:0.75rem;cursor:pointer;transition:all 0.15s"
+                 onmouseover="this.style.borderColor='#2563eb';this.style.background='#eff6ff'"
+                 onmouseout="this.style.borderColor='#e2e8f0';this.style.background='#fafafa'">
+                <div style="font-size:0.82rem;font-weight:600;color:#1e293b;margin-bottom:0.25rem">${title}</div>
+                <div style="font-size:0.72rem;color:#64748b;margin-bottom:0.35rem">${standards}</div>
+                <div style="display:flex;align-items:center;gap:0.4rem;flex-wrap:wrap">
+                    <span style="background:#dbeafe;color:#1e40af;padding:0.1rem 0.4rem;border-radius:99px;font-size:0.68rem;font-weight:600">${resolvedCount} step${resolvedCount!==1?'s':''}</span>
+                    <span style="font-size:0.7rem;color:#94a3b8;font-style:italic">try: "${example}"</span>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    cats.forEach(cat => {
+        const btn = document.createElement('button');
+        btn.className = 'cat-tab' + (cat === activeCat ? ' active' : '');
+        btn.textContent = `${cat} (${grouped[cat].length})`;
+        btn.onclick = () => {
+            activeCat = cat;
+            tabsEl.querySelectorAll('.cat-tab').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderWorkflowCards(cat);
+        };
+        tabsEl.appendChild(btn);
+    });
+
+    body.appendChild(tabsEl);
+    body.appendChild(gridEl);
+    renderWorkflowCards(activeCat);
+
+    // Update count badge
+    const countEl = document.getElementById('workflowCount');
+    if (countEl) countEl.textContent = `${INTENT_MAP.length} workflows`;
+}
+
+// Load a workflow by pattern/title — runs the search
+function useWorkflow(pattern, title) {
+    document.getElementById('queryInput').value = pattern;
+    document.getElementById('workflowBody').style.display = 'none';
+    document.getElementById('workflowArrow').textContent = '▶';
+    searchFormula();
+    window.scrollTo({top:0, behavior:'smooth'});
+}
+
 let browserInitialised = false;
 function initBrowserContent() {
     if (browserInitialised) return;
@@ -2391,6 +2668,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Set browser stats text (cards render lazily on first open)
     const stats = document.getElementById('dbStats');
     if (stats) stats.textContent = `${FORMULA_COUNT} formulas · ${CATEGORIES.length} categories`;
+    const wfCount = document.getElementById('workflowCount');
+    if (wfCount) wfCount.textContent = `${INTENT_MAP.length} workflows`;
 });
 
 </script>
