@@ -9,6 +9,11 @@ app.use(express.json());
 // Serve static files (HTML, CSS, JS)
 app.use(express.static(path.join(__dirname)));
 
+// Root route - serve index.html
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
 // ── AI API Proxy Endpoint ──
 app.post('/api/ai-call', async (req, res) => {
     try {
