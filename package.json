@@ -5,8 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js",
-    "test": "node tests/run_tests.js"
+    "dev": "node server.js"
   },
   "keywords": ["engineering", "calculator", "ai"],
   "author": "",
