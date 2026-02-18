@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Engineering Calculator — Demo</title>
+    <style>
+      body { font-family: sans-serif; padding: 1rem; }
+      .container { max-width: 720px; margin: auto; }
+      label { display: block; margin-top: 0.75rem; }
+      input, select { width: 100%; padding: 0.4rem; margin-top: 0.25rem; }
+      button { margin-top: 0.75rem; padding: 0.6rem 1rem; }
+      pre { background: #f6f6f6; padding: 0.75rem; border-radius: 4px; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Engineering Calculator (Demo)</h1>
+      <p>Frontend is wired to the backend API at /api. This is a minimal, offline-friendly test UI.</p>
+      <form id="calcForm" onsubmit="return false;">
+        <label for="formulaId">Formula</label>
+        <select id="formulaId"></select>
+        <div id="inputs"></div>
+        <button type="button" onclick="calculateAndShow()">Calculate</button>
+        <span style="margin-left:8px;" aria-label="ai-workflow" id="aiLabel">AI Workflow</span>
+        <button type="button" id="workflowBtn" onclick="fetchWorkflow()">Show Workflow</button>
+        <span style="margin-left:8px;" aria-label="local-ai-toggle">Local AI</span>
+        <input type="checkbox" id="localAiToggle" style="vertical-align:middle" checked />
+        <button type="button" id="localAiBtn" onclick="generateLocalWorkflow()">Generate Local Workflow</button>
+        <span style="margin-left:8px;" aria-label="export-options">Export:</span>
+        <select id="exportFormat">
+          <option value="txt">TXT</option>
+          <option value="csv">CSV</option>
+        </select>
+        <button type="button" onclick="exportLastResult()">Export</button>
+      </form>
+      <h3>Result</h3>
+      <pre id="resultBlock">No result yet.</pre>
+      <pre id="workflowBlock" style="margin-top:1rem; display:none;"></pre>
+      <pre id="localWorkflowBlock" style="margin-top:1rem; display:none;"></pre>
+    </div>
+      <script>
+      // Real in-browser AI option (safer default). Can be toggled per user.
+      const LOCAL_AI_ENABLED = true
+      let _aiWorker = null
+      function ensureAiWorker(){
+        if (_aiWorker) return _aiWorker
+        _aiWorker = new Worker('/ai_local_worker.js')
+        _aiWorker.onmessage = function(ev){
+          const data = ev.data
+          if (data && data.type === 'workflow') {
+            const lblk = document.getElementById('localWorkflowBlock')
+            lblk.style.display = 'block'
+            lblk.textContent = JSON.stringify(data.workflow, null, 2)
+          }
+        }
+        return _aiWorker
+      }
+      async function fetchFormulas(){
+        const res = await fetch('/api/formulas');
+        const data = await res.json();
+        window.formulas = data.formulas || [];
+        const select = document.getElementById('formulaId');
+        select.innerHTML = '';
+        data.formulas.forEach(f => {
+          const opt = document.createElement('option');
+          opt.value = f.id; opt.text = f.name;
+          select.appendChild(opt);
+        });
+        renderInputs();
+        // Gate AI workflow UI if not enabled
+        if (!LOCAL_AI_ENABLED) {
+          const wfBtn = document.getElementById('workflowBtn')
+          const aiLbl = document.getElementById('aiLabel')
+          if (wfBtn) wfBtn.style.display = 'none'
+          if (aiLbl) aiLbl.style.display = 'none'
+          const lab = document.getElementById('localAiToggle')
+          const btn = document.getElementById('localAiBtn')
+          if (lab) lab.style.display = 'none'
+          if (btn) btn.style.display = 'none'
+        }
+      }
+      function renderInputs(){
+        const select = document.getElementById('formulaId');
+        const f = (window.formulas || []).find(x => x.id === select.value) || window.formulas[0];
+        const container = document.getElementById('inputs');
+        container.innerHTML = '';
+        if(!f) return;
+        (f.inputs || []).forEach(inp => {
+          const label = document.createElement('label');
+          label.textContent = inp.name;
+          label.htmlFor = 'inp_' + inp.name;
+          const input = document.createElement('input');
+          input.id = 'inp_' + inp.name; input.name = inp.name; input.type = 'number'; input.step = 'any';
+          container.appendChild(label); container.appendChild(input);
+        });
+      }
+      async function calculateAndShow(){
+        const select = document.getElementById('formulaId');
+        const f = (window.formulas || []).find(x => x.id === select.value);
+        if(!f) return;
+        const inputs = {};
+        (f.inputs || []).forEach(inp => {
+          const val = document.getElementById('inp_' + inp.name).value;
+          inputs[inp.name] = val === '' ? 0 : Number(val);
+        });
+        const res = await fetch('/api/calculate', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ formula_id: f.id, inputs })
+        });
+        const data = await res.json();
+        const blk = document.getElementById('resultBlock');
+        blk.textContent = JSON.stringify(data, null, 2);
+        window.lastCalculation = data
+      }
+      async function fetchWorkflow(){
+        const select = document.getElementById('formulaId');
+        const fid = select.value
+        if(!fid) return
+        try {
+          const resp = await fetch(`/api/workflow/${fid}`)
+          const wf = await resp.json()
+          const wblk = document.getElementById('workflowBlock')
+          wblk.style.display = 'block'
+          wblk.textContent = JSON.stringify(wf, null, 2)
+        } catch (err) {
+          const wblk = document.getElementById('workflowBlock')
+          wblk.style.display = 'block'
+          wblk.textContent = 'Failed to fetch workflow: ' + (err && err.message ? err.message : String(err))
+        }
+      }
+      async function generateLocalWorkflow(){
+        if (!document.getElementById('localAiToggle').checked) {
+          alert('Local AI is disabled. Toggle the Local AI checkbox to enable.')
+          return
+        }
+        const select = document.getElementById('formulaId')
+        const f = (window.formulas || []).find(x => x.id === select.value)
+        if (!f) return
+        const inputs = {}
+        ;(f.inputs || []).forEach(inp => {
+          const val = document.getElementById('inp_' + inp.name).value
+          inputs[inp.name] = val === '' ? 0 : Number(val)
+        })
+        ensureAiWorker().postMessage({ type: 'generate-workflow', formula: f, inputs })
+      }
+      function exportLastResult(){
+        const fmt = document.getElementById('exportFormat').value
+        const data = window.lastCalculation || {}
+        let text = ''
+        if (data && typeof data === 'object') {
+          text = `Formula: ${data.name || ''}\nInput: ${JSON.stringify(data.inputs || {})}\nResult: ${data.result}\nExpression: ${data.expression}`
+        } else {
+          text = 'No calculation yet.'
+        }
+        if (fmt === 'txt') {
+          const blob = new Blob([text], { type: 'text/plain' })
+          const a = document.createElement('a')
+          a.href = URL.createObjectURL(blob)
+          a.download = 'calculation.txt'
+          document.body.appendChild(a)
+          a.click()
+          document.body.removeChild(a)
+        } else if (fmt === 'csv') {
+          // simple CSV with headers
+          const headers = ['name','input_json','result','expression']
+          const row = [`"${data.name || ''}"`, `"${JSON.stringify(data.inputs || {})}"`, `"${data.result}"`, `"${data.expression || ''}"`]
+          const blob = new Blob([headers.join(',') + '\n' + row.join(',')], { type: 'text/csv' })
+          const a = document.createElement('a')
+          a.href = URL.createObjectURL(blob)
+          a.download = 'calculation.csv'
+          document.body.appendChild(a)
+          a.click()
+          document.body.removeChild(a)
+        }
+      }
+      window.addEventListener('load', fetchFormulas);
+      window.addEventListener('change', e => { if(e.target && e.target.id === 'formulaId'){ renderInputs(); } });
+      // helper to export
+      window.exportLastResult = exportLastResult
+      window.fetchWorkflow = fetchWorkflow
+      window.calculateAndShow = calculateAndShow
+      // exportBlock placeholder for local UI
+      // Ensure local workflow block exists
+      document.addEventListener('DOMContentLoaded', () => {
+        const lw = document.getElementById('localWorkflowBlock')
+        if (lw) lw.style.display = 'none'
+      })
+    </script>
+  </body>
+  </html>
